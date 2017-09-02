@@ -6,16 +6,15 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -27,30 +26,30 @@ public class Game implements Screen {
 
     private SpriteBatch batch;
     private Player player;
-    private Baza baza;
+    private Base playerBase;
     private TiledMap map;
     private OrthogonalTiledMapRenderer renderer;
-//    private TiledMapRenderer renderer;
+
     private OrthographicCamera camera;
     private Texture texture;
     private float timeHome;
     private float timeShoot;
     private float timerMonster;
-    private float timerGift;
+    private float giftTimer;
     private Pixmap pixmap;
     private Random r;
-    //	lista strzałów
-    private LinkedList<Shoot> strzaly; //lista strzałów
-    private LinkedList<Shoot> strzalyPotworow; // lsita strzałów potworów
-    private LinkedList<Monster> potwory; //lista potworów
-    private LinkedList<Gift> giftLinkedList; //lista potworów
-    //	Zmienna wyświetlająca obecną pozycję
+
+    private LinkedList<Shot> playerShots;
+    private LinkedList<Shot> monstersShots;
+    private LinkedList<Monster> monsters;
+    private LinkedList<Gift> gifts;
+
     private BitmapFont font;
     private Stage stage;
     private Interface myinterface;
     private GameInterface gameInterface;
-    private Tura tura;
-    private Statystyki statystyki;
+    private Turn turn;
+    private PlayerStats playerStats;
     private Texture textureShoot;
     private TextureAtlas textureAtlasPlayer;
     private TextureAtlas textureAtlasEnemy;
@@ -64,38 +63,29 @@ public class Game implements Screen {
 
         batch = new SpriteBatch();
         textureShoot = new Texture("shoot.png");
-//        map = new Texture("mapa.png");
 
         textureAtlasPlayer = new TextureAtlas(Gdx.files.internal("player.pack"));
         textureAtlasEnemy = new TextureAtlas(Gdx.files.internal("enemy.pack"));
 
-        tura = new Tura(false,false, 60);
-        statystyki = new Statystyki();
+        turn = new Turn(false,false, 60);
+        playerStats = new PlayerStats();
 
-//		Inicjalizacja strzałów
-        strzaly = new LinkedList<Shoot>();
+        playerShots = new LinkedList<Shot>();
 
-//		Inicjalizacja strzałów
-        strzalyPotworow = new LinkedList<Shoot>();
+        monstersShots = new LinkedList<Shot>();
 
-//		Inicjalizacja potworów
-        potwory = new LinkedList<Monster>();
+        monsters = new LinkedList<Monster>();
 
-//      Inicjalizacja prezentów
-        giftLinkedList = new LinkedList<Gift>();
+        gifts = new LinkedList<Gift>();
 
-//		Random
         r = new Random();
 
-        baza = new Baza();
+        playerBase = new Base();
 
-//		Kamera i jej ustawienia
         camera = new OrthographicCamera(5000,5000);
         camera.zoom = (float) 0.2;
 
-//		Utworzenie gracza
         player = new Player(camera.viewportWidth / 2f, camera.viewportHeight / 2f);
-
 
         map = new TmxMapLoader().load("map/map.tmx");
         renderer = new OrthogonalTiledMapRenderer(map);
@@ -113,20 +103,16 @@ public class Game implements Screen {
         texture = new Texture(pixmap);
         pixmap.dispose();
 
-//		TimerHome
         timeHome = 0;
 
-//		TimerShoot
         timeShoot = 1;
 
         timerMonster = 1;
 
-        timerGift = 0;
+        giftTimer = 0;
 
-//		napis
         font = new BitmapFont();
         font.setColor(Color.WHITE);
-
     }
 
 
@@ -153,7 +139,7 @@ public class Game implements Screen {
 //        batch.draw(map, 0,0);
 
 //		obszar bazy
-        batch.draw(baza.getTexture(), baza.getX(), baza.getY(),baza.getWidth(), baza.getHeight());
+        batch.draw(playerBase.getTexture(), playerBase.getX(), playerBase.getY(), playerBase.getWidth(), playerBase.getHeight());
 
 //		rysowanie postaci gracza
         if(player.getDirection() == 0){
@@ -168,17 +154,17 @@ public class Game implements Screen {
         batch.draw(player.getTexture(), player.getPozycja().x, player.getPozycja().y);
 
 //		Rysowanie strzałów
-        for (Shoot s : strzaly) {
+        for (Shot s : playerShots) {
             batch.draw(textureShoot, s.x, s.y);
         }
 
 //		Rysowanie strzałów potworów
-        for (Shoot s : strzalyPotworow) {
+        for (Shot s : monstersShots) {
             batch.draw(textureShoot, s.x, s.y);
         }
 
 //		Rysowanie potworów z listy
-        for (Monster m : potwory) {
+        for (Monster m : monsters) {
             if(m.getMoveDirection() == 0){
                 m.draw(batch, textureAtlasEnemy, 180); // lewo
             }else if(m.getMoveDirection() == 2){
@@ -192,7 +178,7 @@ public class Game implements Screen {
         }
 
 //      Rysowanie prezentów
-        for (Gift g : giftLinkedList) {
+        for (Gift g : gifts) {
             g.getSprite().draw(batch);
         }
 
@@ -205,7 +191,7 @@ public class Game implements Screen {
     private void update(float dt) {
 
 //      warunek na koniec gry
-        if(player.getHp() < 1 || baza.getHp() < 1) {
+        if(player.getHp() < 1 || playerBase.getHp() < 1) {
             game.setScreen(new End(game, player));
         }
 
@@ -215,7 +201,7 @@ public class Game implements Screen {
         renderer.render();
 
 //		ustawienie współrzędnych playera
-        myinterface.setPlayer("Poziom: " + statystyki.getPoziom());
+        myinterface.setPlayer("Poziom: " + playerStats.getLevel());
 
 //		ustawienie życia bohatera
         myinterface.setLife("Life: " + player.getHp());
@@ -224,7 +210,7 @@ public class Game implements Screen {
         myinterface.setScore(player.getScore() + "");
 
 //		ustawienie życia bazy
-        myinterface.setBaza("Baza: " + baza.getHp());
+        myinterface.setBaza("Base: " + playerBase.getHp());
 
 //		ustawienie kamery tak aby mapa była maksymalnie do krańców ekranu
 //		ustawienie kamery z lewej strony i prawej strony
@@ -259,49 +245,49 @@ public class Game implements Screen {
         }
 
 //        TURA
-        if(statystyki.getPoziom() % 5 != 0){
-            tura.setTime(tura.getTime() - Gdx.graphics.getDeltaTime());
+        if(playerStats.getLevel() % 5 != 0){
+            turn.setTime(turn.getTime() - Gdx.graphics.getDeltaTime());
 
 //        sprawdzenie czy nie skończył się czas ataku
-            if(tura.getTime() < 0 && tura.isTyp() == false){
-                tura.setTyp(true);
-                tura.changeTimeAtac();
-                tura.setTime(tura.getKoniecCzasuPrzerwy());
+            if(turn.getTime() < 0 && turn.isTyp() == false){
+                turn.setTyp(true);
+                turn.updateAttackTimeout();
+                turn.setTime(turn.getBreakTimeout());
                 myinterface.setInfo("Przerwa od ataku");
 //            System.out.println("Koniec czasu ataku");
             }
 
 //        sprawdzenie czy nie skończył się czas odpoczynku
-            if(tura.getTime() < 0 && tura.isTyp() == true){
-                Double iloscpotworkow = tura.getMakspotworow() * 1.5;
-                tura.setMakspotworow(iloscpotworkow.intValue());
-                tura.setTyp(false);
-                tura.changeTimeBreak();
-                tura.setTime(tura.getKoniecCzasuAtaku());
-                statystyki.setPoziom(statystyki.getPoziom() + 1);
+            if(turn.getTime() < 0 && turn.isTyp() == true){
+                Double iloscpotworkow = turn.getMonstersLimit() * 1.5;
+                turn.setMonstersLimit(iloscpotworkow.intValue());
+                turn.setTyp(false);
+                turn.changeTimeBreak();
+                turn.setTime(turn.getAttackTimeout());
+                playerStats.setLevel(playerStats.getLevel() + 1);
                 myinterface.setInfo("Atak");
-                if(statystyki.getPoziom() % 5 == 0){
-                    tura.setBoss(true);
+                if(playerStats.getLevel() % 5 == 0){
+                    turn.setBoss(true);
                 }else{
-                    tura.setBoss(false);
+                    turn.setBoss(false);
                 }
             }
-//            System.out.println(statystyki.getPoziom());
+//            System.out.println(playerStats.getLevel());
         }else{
 
-            tura.setBossTime(tura.getBossTime() + Gdx.graphics.getDeltaTime());
+            turn.setBossTime(turn.getBossTime() + Gdx.graphics.getDeltaTime());
 
-            if(tura.getBossTime() > 5){
+            if(turn.getBossTime() > 5){
                 myinterface.setInfo("");
             }
 
-            if(tura.isBoss() == true && tura.isBossdodany() == false){
-                potwory.add(new Monster(r.nextInt(5000),r.nextInt(5000),r.nextInt(25),r.nextInt(20),r.nextInt(100)));
-                tura.setBossdodany(true);
+            if(turn.isBoss() == true && turn.isBossAdded() == false){
+                monsters.add(new Monster(r.nextInt(5000),r.nextInt(5000),r.nextInt(25),r.nextInt(20),r.nextInt(100)));
+                turn.setBossAdded(true);
             }
 
             boolean isBoss = false;
-            for (Monster m : potwory) {
+            for (Monster m : monsters) {
                 if(m.isBoss() == true){
                     isBoss = true;
                 }
@@ -312,25 +298,25 @@ public class Game implements Screen {
                 if(gift == false){
                     player.setHp(player.getHp() + 5);
                 }else{
-                    baza.setHp(baza.getHp() + 5);
+                    playerBase.setHp(playerBase.getHp() + 5);
                 }
-                tura.setBossTime(0);
-                tura.setBoss(false);
-                tura.setBossdodany(false);
-                tura.setTyp(false);
-                tura.setTime(tura.getKoniecCzasuAtaku());
-                statystyki.setPoziom(statystyki.getPoziom() + 1);
+                turn.setBossTime(0);
+                turn.setBoss(false);
+                turn.setBossAdded(false);
+                turn.setTyp(false);
+                turn.setTime(turn.getAttackTimeout());
+                playerStats.setLevel(playerStats.getLevel() + 1);
             }
         }
 
 
 //        Usunięcie info o "Przewa od ataku"
-        if(tura.isTyp() == false && tura.getTime() < 5){
+        if(turn.isTyp() == false && turn.getTime() < 5){
             myinterface.setInfo("");
         }
 
 //        Usunięcie info o "Atak"
-        if(tura.isTyp() == true && tura.getTime() < 2){
+        if(turn.isTyp() == true && turn.getTime() < 2){
             myinterface.setInfo("");
         }
 
@@ -354,13 +340,13 @@ public class Game implements Screen {
 
 //		STRZAŁY
 //		Dodawanie strzałów potorów
-        for (Monster m : potwory) {
+        for (Monster monster : monsters) {
             int l1 = r.nextInt(100);
             int l2 = r.nextInt(100);
             if(l1 == l2){
-                int kierunek = m.generateDirectionShoot(player);
+                int shotDirection = monster.generateDirectionShoot(player);
 //                int kierunek = r.nextInt(4);
-                strzalyPotworow.add(new Shoot(m.x + m.getTexture().getWidth() / 2 - 5, m.y + m.getTexture().getHeight() / 2 - 5, 1, kierunek));
+                monstersShots.add(new Shot(monster.x + monster.getTexture().getWidth() / 2 - 5, monster.y + monster.getTexture().getHeight() / 2 - 5, 1, shotDirection));
             }
         }
 
@@ -403,93 +389,26 @@ public class Game implements Screen {
             }
 
             if(timeShoot > 0.2){
-                strzaly.add(new Shoot(player.x + player.getTexture().getWidth() / 2 - 5, player.y + player.getTexture().getHeight() / 2 - 5, 1, player.getDirection()));
+                playerShots.add(new Shot(player.x + player.getTexture().getWidth() / 2 - 5, player.y + player.getTexture().getHeight() / 2 - 5, 1, player.getDirection()));
                 timeShoot = 0;
             }
         }
 
-        for (Shoot s : strzaly) {
-            if(s.getDirection() == 0){
-                s.x -= 800 * Gdx.graphics.getDeltaTime();
-            }
-            if(s.getDirection() == 1){
-                s.y += 800 * Gdx.graphics.getDeltaTime();
-            }
-            if(s.getDirection() == 2){
-                s.x += 800 * Gdx.graphics.getDeltaTime();
-            }
-            if(s.getDirection() == 3){
-                s.y -= 800 * Gdx.graphics.getDeltaTime();
-            }
-
-            if(s.getDirection() == 4){
-                s.x += 500 * Gdx.graphics.getDeltaTime();
-                s.y += 500 * Gdx.graphics.getDeltaTime();
-            }
-
-            if(s.getDirection() == 5){
-                s.x -= 500 * Gdx.graphics.getDeltaTime();
-                s.y += 500 * Gdx.graphics.getDeltaTime();
-            }
-
-            if(s.getDirection() == 6){
-                s.x += 500 * Gdx.graphics.getDeltaTime();
-                s.y -= 500 * Gdx.graphics.getDeltaTime();
-            }
-
-            if(s.getDirection() == 7){
-                s.x -= 500 * Gdx.graphics.getDeltaTime();
-                s.y -= 500 * Gdx.graphics.getDeltaTime();
-            }
-        }
-
-        for (Shoot s : strzalyPotworow) {
-            if(s.getDirection() == 0){
-                s.x -= 800 * Gdx.graphics.getDeltaTime();
-            }
-            if(s.getDirection() == 1){
-                s.y += 800 * Gdx.graphics.getDeltaTime();
-            }
-            if(s.getDirection() == 2){
-                s.x += 800 * Gdx.graphics.getDeltaTime();
-            }
-            if(s.getDirection() == 3){
-                s.y -= 800 * Gdx.graphics.getDeltaTime();
-            }
-
-            if(s.getDirection() == 4){
-                s.x += 500 * Gdx.graphics.getDeltaTime();
-                s.y += 500 * Gdx.graphics.getDeltaTime();
-            }
-
-            if(s.getDirection() == 5){
-                s.x -= 500 * Gdx.graphics.getDeltaTime();
-                s.y += 500 * Gdx.graphics.getDeltaTime();
-            }
-
-            if(s.getDirection() == 6){
-                s.x += 500 * Gdx.graphics.getDeltaTime();
-                s.y -= 500 * Gdx.graphics.getDeltaTime();
-            }
-
-            if(s.getDirection() == 7){
-                s.x -= 500 * Gdx.graphics.getDeltaTime();
-                s.y -= 500 * Gdx.graphics.getDeltaTime();
-            }
-        }
+        updateShoots(playerShots);
+        updateShoots(monstersShots);
 
 //		ograniczenie pola strzałów do mapy gry
-        for(Iterator<Shoot> it = strzaly.iterator(); it.hasNext();) {
-            Shoot shoot = it.next();
-            if (shoot.y > 5000 || shoot.y < 0 || shoot.x > 5000 || shoot.x < 0) {
+        for(Iterator<Shot> it = playerShots.iterator(); it.hasNext();) {
+            Shot shot = it.next();
+            if (shot.y > 5000 || shot.y < 0 || shot.x > 5000 || shot.x < 0) {
                 it.remove();
             }
         }
 
 //		ograniczenie pola strzałów potworów do mapy gry
-        for(Iterator<Shoot> it = strzalyPotworow.iterator(); it.hasNext();) {
-            Shoot shoot = it.next();
-            if (shoot.y > 5000 || shoot.y < 0 || shoot.x > 5000 || shoot.x < 0) {
+        for(Iterator<Shot> it = monstersShots.iterator(); it.hasNext();) {
+            Shot shot = it.next();
+            if (shot.y > 5000 || shot.y < 0 || shot.x > 5000 || shot.x < 0) {
                 it.remove();
             }
         }
@@ -497,12 +416,12 @@ public class Game implements Screen {
 //		POTWORY
         timerMonster += Gdx.graphics.getDeltaTime();
         if(timerMonster > 1){
-            if(potwory.size() < tura.getMakspotworow() && tura.isTyp() == false)
-                potwory.add(new Monster(r.nextInt(5000),r.nextInt(5000), statystyki.getPoziom()));
+            if(monsters.size() < turn.getMonstersLimit() && turn.isTyp() == false)
+                monsters.add(new Monster(r.nextInt(5000),r.nextInt(5000), playerStats.getLevel()));
             timerMonster = 0;
         }
 
-        for (Monster m : potwory) {
+        for (Monster m : monsters) {
             if (m.getMoveQuantity() > 0) {
                 m.moveToBottom();
                 m.moveToLeft();
@@ -523,12 +442,12 @@ public class Game implements Screen {
 
 //		KOLIZJE
 //		Strzał - potwór
-        for(Iterator<Shoot> it = strzaly.iterator(); it.hasNext();) {
-            Shoot shoot = it.next();
-            for(Iterator<Monster> pot = potwory.iterator(); pot.hasNext();) {
+        for(Iterator<Shot> it = playerShots.iterator(); it.hasNext();) {
+            Shot shot = it.next();
+            for(Iterator<Monster> pot = monsters.iterator(); pot.hasNext();) {
                 Monster p = pot.next();
-                if (shoot.overlaps(p)) {
-                    p.setHp(p.getHp() - shoot.getStrong());
+                if (shot.overlaps(p)) {
+                    p.setHp(p.getHp() - shot.getStrong());
                     if(p.getHp() < 1){
                         player.setScore(player.getScore() + p.getScore());
                         pot.remove();
@@ -538,8 +457,8 @@ public class Game implements Screen {
             }
         }
 
-//		Potwór bohater/baza
-        for(Iterator<Monster> pot = potwory.iterator(); pot.hasNext();) {
+//		Potwór bohater/playerBase
+        for(Iterator<Monster> pot = monsters.iterator(); pot.hasNext();) {
             Monster p = pot.next();
             Rectangle rec = new Rectangle(player.x - player.radius, player.y - player.radius, player.radius * 2,player.radius * 2);
             if(p.overlaps(rec) && p.isBoss() == false){
@@ -552,23 +471,23 @@ public class Game implements Screen {
                 pot.remove();
             }
 
-            if(p.overlaps(baza) && p.isBoss() == false){
-                baza.setHp(baza.getHp() - 1);
+            if(p.overlaps(playerBase) && p.isBoss() == false){
+                playerBase.setHp(playerBase.getHp() - 1);
                 pot.remove();
             }
         }
 
 //		Strzał potwora - bohatera/bazy
-        for(Iterator<Shoot> it = strzalyPotworow.iterator(); it.hasNext();) {
-            Shoot shoot = it.next();
+        for(Iterator<Shot> it = monstersShots.iterator(); it.hasNext();) {
+            Shot shot = it.next();
             Rectangle rec = new Rectangle(player.x - player.radius, player.y - player.radius, player.radius * 2,player.radius * 2);
-            if(shoot.overlaps(rec)){
+            if(shot.overlaps(rec)){
                 it.remove();
                 player.setHp(player.getHp() - 1);
             }
-            if(shoot.overlaps(baza)){
+            if(shot.overlaps(playerBase)){
                 it.remove();
-                baza.setHp(baza.getHp() - 1);
+                playerBase.setHp(playerBase.getHp() - 1);
             }
         }
 
@@ -677,8 +596,8 @@ public class Game implements Screen {
 
 //      Obsługa prezentu
 //      Rotaja
-        if(giftLinkedList != null){
-            for (Gift g : giftLinkedList) {
+        if(gifts != null){
+            for (Gift g : gifts) {
                 g.animation();
                 g.setX(g.getSprite().getX());
                 g.setY(g.getSprite().getY());
@@ -686,14 +605,14 @@ public class Game implements Screen {
         }
 
 //        Dodanie czasu od ostatniego prezentu
-        timerGift += Gdx.graphics.getDeltaTime();
+        giftTimer += Gdx.graphics.getDeltaTime();
 
 //      Dodanie prezentu na mapę
         int g1 = r.nextInt(1000);
         int g2 = r.nextInt(1000);
-        if(g1 == g2 || timerGift > 100){
-            giftLinkedList.add(new Gift(r.nextInt(5000), r.nextInt(5000)));
-            timerGift = 0;
+        if(g1 == g2 || giftTimer > 100){
+            gifts.add(new Gift(r.nextInt(5000), r.nextInt(5000)));
+            giftTimer = 0;
         }
 
 //        sprawdzenie czasu obecnego prezentu
@@ -718,12 +637,12 @@ public class Game implements Screen {
                 player.setSpeed(player.getSpeed() + 50);
                 myinterface.setGift("");
             }else if(player.getGiftType() == 5){
-                for (Monster monster : potwory) {
+                for (Monster monster : monsters) {
                     monster.setSpeed(monster.getSpeed() - 1);
                     myinterface.setGift("");
                 }
             }else if(player.getGiftType() == 6){
-                for (Monster monster : potwory) {
+                for (Monster monster : monsters) {
                     monster.setSpeed(monster.getSpeed() + 1);
                     myinterface.setGift("");
                 }
@@ -736,7 +655,7 @@ public class Game implements Screen {
 
 //      Kolizje Z PREZENTEM
 //      Bohater - prezent
-        for(Iterator<Gift> it = giftLinkedList.iterator(); it.hasNext();) {
+        for(Iterator<Gift> it = gifts.iterator(); it.hasNext();) {
             Gift gift = it.next();
             Rectangle rec = new Rectangle(player.x - player.radius, player.y - player.radius, player.radius * 2,player.radius * 2);
             if(gift.overlaps(rec)){
@@ -747,15 +666,15 @@ public class Game implements Screen {
 //                    }
 //                    dfkngkdjs
                     it.remove();
-                    gift.getGift(player, potwory, strzaly,strzalyPotworow, myinterface);
+                    gift.getGift(player, monsters, playerShots, monstersShots, myinterface);
                 }
             }
         }
 
 //        Kolizja potworek - prezent
-        for(Iterator<Gift> giftIterator = giftLinkedList.iterator(); giftIterator.hasNext();) {
+        for(Iterator<Gift> giftIterator = gifts.iterator(); giftIterator.hasNext();) {
             Gift gift = giftIterator.next();
-            for(Iterator<Monster> monsterIterator = potwory.iterator(); monsterIterator.hasNext();) {
+            for(Iterator<Monster> monsterIterator = monsters.iterator(); monsterIterator.hasNext();) {
                 Monster monster = monsterIterator.next();
                 if(gift.overlaps(monster)){
                     giftIterator.remove();
@@ -763,40 +682,58 @@ public class Game implements Screen {
                 }
             }
         }
-
-//        Kolizja strzał Potworów - prezent
-        for(Iterator<Gift> giftIterator = giftLinkedList.iterator(); giftIterator.hasNext();) {
-            Gift gift = giftIterator.next();
-            for(Iterator<Shoot> shootIterator = strzalyPotworow.iterator(); shootIterator.hasNext();) {
-                Shoot shoot = shootIterator.next();
-                if(gift.overlaps(shoot)){
-                    giftIterator.remove();
-                    shootIterator.remove();
-                }
-            }
-        }
-
-//        Kolizja strzał - prezent
-        for(Iterator<Gift> giftIterator = giftLinkedList.iterator(); giftIterator.hasNext();) {
-            Gift gift = giftIterator.next();
-            for(Iterator<Shoot> shootIterator = strzaly.iterator(); shootIterator.hasNext();) {
-                Shoot shoot = shootIterator.next();
-                if(gift.overlaps(shoot)){
-                    giftIterator.remove();
-                    shootIterator.remove();
-                }
-            }
-        }
+        
+        removeCollidingObjects(monstersShots, gifts);
+        removeCollidingObjects(playerShots, gifts);
 
 //        czas po którym prezent znika
-        for(Iterator<Gift> giftIterator = giftLinkedList.iterator(); giftIterator.hasNext();) {
-            Gift gift = giftIterator.next();
-            gift.setTime(gift.getTime() - Gdx.graphics.getDeltaTime());
-            if(gift.getTime() < 0){
-                giftIterator.remove();
+        updateGiftsTime();
+    }
+
+    private void updateGiftsTime() {
+        gifts.forEach(Gift::updateTime);
+        gifts.removeIf(gift -> gift.getTime() <= 0);
+    }
+
+    private void removeCollidingObjects(List<? extends Rectangle> objectsA, List<? extends Rectangle> objectsB) {
+    	objectsA.removeIf(object -> objectsB.removeIf(object::overlaps));
+    }
+
+    private void updateShoots(List<Shot> shots) {
+        for (Shot s : shots) {
+            if(s.getDirection() == 0){
+                s.x -= 800 * Gdx.graphics.getDeltaTime();
+            }
+            if(s.getDirection() == 1){
+                s.y += 800 * Gdx.graphics.getDeltaTime();
+            }
+            if(s.getDirection() == 2){
+                s.x += 800 * Gdx.graphics.getDeltaTime();
+            }
+            if(s.getDirection() == 3){
+                s.y -= 800 * Gdx.graphics.getDeltaTime();
+            }
+
+            if(s.getDirection() == 4){
+                s.x += 500 * Gdx.graphics.getDeltaTime();
+                s.y += 500 * Gdx.graphics.getDeltaTime();
+            }
+
+            if(s.getDirection() == 5){
+                s.x -= 500 * Gdx.graphics.getDeltaTime();
+                s.y += 500 * Gdx.graphics.getDeltaTime();
+            }
+
+            if(s.getDirection() == 6){
+                s.x += 500 * Gdx.graphics.getDeltaTime();
+                s.y -= 500 * Gdx.graphics.getDeltaTime();
+            }
+
+            if(s.getDirection() == 7){
+                s.x -= 500 * Gdx.graphics.getDeltaTime();
+                s.y -= 500 * Gdx.graphics.getDeltaTime();
             }
         }
-
     }
 
     @Override

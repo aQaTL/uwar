@@ -8,13 +8,13 @@ import com.badlogic.gdx.math.Rectangle;
 /**
  * Created by mariuszbugajski on 20.03.2017.
  */
-public class Shoot extends Rectangle {
+public class Shot extends Rectangle {
     private int strong;
     private int direction;
     private Texture texture;
     private Pixmap pixmap;
 
-    public Shoot(float x, float y, int strong, int direction){
+    public Shot(float x, float y, int strong, int direction){
         this.x = x;
         this.y = y;
         this.strong = strong;

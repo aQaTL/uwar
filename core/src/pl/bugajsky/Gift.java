@@ -1,7 +1,6 @@
 package pl.bugajsky;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Rectangle;
@@ -82,7 +81,7 @@ public class Gift extends Rectangle{
         getSprite().rotate(-2);
     }
 
-    public void getGift(Player player, LinkedList<Monster> monsters, LinkedList<Shoot> shootsPlayer, LinkedList<Shoot> shootsMonster, Interface myInterface){
+    public void getGift(Player player, LinkedList<Monster> monsters, LinkedList<Shot> shootsPlayer, LinkedList<Shot> shootsMonster, Interface myInterface){
         if(getType() == 0){
             player.setHp(player.getHp() + 10);
             myInterface.setInfo("Dodano 10pkt zycia");
@@ -96,8 +95,8 @@ public class Gift extends Rectangle{
             player.setSpeed(player.getSpeed() - 50);
             myInterface.setInfo("Zmniejszono szybkosc gracza");
         }else if(getType() == 4){
-            for(Iterator<Shoot> it = shootsMonster.iterator(); it.hasNext();) {
-                Shoot shoot = it.next();
+            for(Iterator<Shot> it = shootsMonster.iterator(); it.hasNext();) {
+                Shot shot = it.next();
                 it.remove();
                 myInterface.setInfo("Usunieto wszystkie strzaly wrogow");
             }
@@ -112,5 +111,9 @@ public class Gift extends Rectangle{
                 myInterface.setInfo("Zmniejszono szybkosc wroga");
             }
         }
+    }
+
+    public void updateTime() {
+        time -= Gdx.graphics.getDeltaTime();
     }
 }

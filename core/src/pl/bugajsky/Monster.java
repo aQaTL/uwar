@@ -14,7 +14,7 @@ import java.util.Random;
  * Created by mariuszbugajski on 02.03.2017.
  */
 
-public class Monster extends Rectangle{
+public class Monster extends Rectangle {
 
     private int hp;
     private int score;
@@ -29,18 +29,18 @@ public class Monster extends Rectangle{
     private int step;
     private Sprite sprite;
 
-    public Monster(int x, int y, int lvl){
-        super(x, y,20,20);
+    public Monster(int x, int y, int lvl) {
+        super(x, y, 20, 20);
         r = new Random();
         hp = r.nextInt(lvl) + 1;
-        speed = r.nextInt(lvl*5) + 1;
+        speed = r.nextInt(lvl * 5) + 1;
         score = r.nextInt(lvl) + 1;
         boss = false;
         moveDirection = r.nextInt(4);
-        moveQuantity = r.nextInt(5)+1;
+        moveQuantity = r.nextInt(5) + 1;
         pixmap = new Pixmap(30, 30, Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.BLUE);
-        pixmap.fillRectangle(0,0,20,20);
+        pixmap.fillRectangle(0, 0, 20, 20);
         texture = new Texture(pixmap);
         pixmap.dispose();
         moveTime = 0;
@@ -48,18 +48,18 @@ public class Monster extends Rectangle{
         sprite = new Sprite();
     }
 
-    public Monster(int x, int y, int hp, int speed, int score){
-        super(x, y,20,20);
+    public Monster(int x, int y, int hp, int speed, int score) {
+        super(x, y, 20, 20);
         r = new Random();
         this.hp = hp;
         this.speed = speed;
         this.score = score;
         boss = true;
         moveDirection = r.nextInt(4);
-        moveQuantity = r.nextInt(5)+1;
+        moveQuantity = r.nextInt(5) + 1;
         pixmap = new Pixmap(50, 50, Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.BLUE);
-        pixmap.fillRectangle(0,0,50,50);
+        pixmap.fillRectangle(0, 0, 50, 50);
         texture = new Texture(pixmap);
         pixmap.dispose();
         moveTime = 0;
@@ -125,81 +125,81 @@ public class Monster extends Rectangle{
 
     //    ruch monstera
 
-    public void moveToLeft(){
-        if(moveDirection == 0){
-            if(x > 0)
+    public void moveToLeft() {
+        if (moveDirection == 0) {
+            if (x > 0)
                 x -= speed;
         }
     }
 
-    public void moveToRight(){
-        if(moveDirection == 2){
-            if(x < 5000)
+    public void moveToRight() {
+        if (moveDirection == 2) {
+            if (x < 5000)
                 x += speed;
         }
     }
 
-    public void moveToTop(){
-        if(moveDirection == 1){
-            if(y < 5000)
+    public void moveToTop() {
+        if (moveDirection == 1) {
+            if (y < 5000)
                 y += speed;
         }
     }
 
-    public void moveToBottom(){
-        if(moveDirection == 3){
-            if(y > 0)
+    public void moveToBottom() {
+        if (moveDirection == 3) {
+            if (y > 0)
                 y -= speed;
         }
     }
 
     //    generowanie nowych ruchów
-    public void generateMove(){
-        if(moveQuantity == 0){
+    public void generateMove() {
+        if (moveQuantity == 0) {
             moveDirection = r.nextInt(4);
-            moveQuantity = r.nextInt(5)+100;
+            moveQuantity = r.nextInt(5) + 100;
             System.out.println(moveQuantity);
         }
     }
 
-//    generowanie nowych ruchów na bazie położenia bohatera
-    public void generateMove(Player player){
-        if(moveQuantity == 0){
+    //    generowanie nowych ruchów na bazie położenia bohatera
+    public void generateMove(Player player) {
+        if (moveQuantity == 0) {
             boolean kierunek = r.nextBoolean();
-            if(kierunek == false){
-                if(x > player.getPozycja().x){
+            if (kierunek == false) {
+                if (x > player.getPozycja().x) {
                     moveDirection = 0;
-                }else{
+                } else {
                     moveDirection = 2;
                 }
-            }else{
-                if(y > player.getPozycja().y){
+            } else {
+                if (y > player.getPozycja().y) {
                     moveDirection = 3;
-                }else{
+                } else {
                     moveDirection = 1;
                 }
             }
-            moveQuantity = r.nextInt(20)+5;
+            moveQuantity = r.nextInt(20) + 5;
         }
     }
 
-//    Generowanie kierunku strzału na podstawie położenia gracza
-public int generateDirectionShoot(Player player){
-        boolean kierunek = r.nextBoolean();
-        if(kierunek == false){
-            if(x > player.getPozycja().x){
+    //    Generowanie kierunku strzału na podstawie położenia gracza
+    public int generateDirectionShoot(Player player) {
+        boolean direction = r.nextBoolean();
+        if (!direction) {
+            if (x > player.getPozycja().x) {
                 return 0;
-            }else{
+            } else {
                 return 2;
             }
-        }else{
-            if(y > player.getPozycja().y){
+        } else {
+            if (y > player.getPozycja().y) {
                 return 3;
-            }else{
+            } else {
                 return 1;
             }
         }
-}
+    }
 
     public int getScore() {
         return score;
@@ -225,18 +225,18 @@ public int generateDirectionShoot(Player player){
         this.step = step;
     }
 
-    public void stepAnimation(float time){
+    public void stepAnimation(float time) {
         setMoveTime(getMoveTime() + time);
-        if(getMoveTime() > 0.15) {
+        if (getMoveTime() > 0.15) {
             setStep(getStep() + 1);
             setMoveTime(0);
 
-            if(getStep() > 2)
+            if (getStep() > 2)
                 setStep(0);
         }
     }
 
-    public void draw (SpriteBatch batch, TextureAtlas region, float angle) {
+    public void draw(SpriteBatch batch, TextureAtlas region, float angle) {
         sprite.set(region.createSprite("" + getStep()));
         sprite.setPosition(x, y);
         sprite.rotate(angle);

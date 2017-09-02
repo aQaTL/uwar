@@ -1,6 +1,5 @@
 package pl.bugajsky;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Rectangle;
@@ -8,26 +7,26 @@ import com.badlogic.gdx.math.Rectangle;
 /**
  * Created by mariuszbugajski on 07.04.2017.
  */
-public class Baza extends Rectangle{
+public class Base extends Rectangle{
 
-    private int poziom;
+    private int level;
     private int hp;
     private Pixmap pixmap;
     private Texture texture;
 
-    public Baza(){
+    public Base(){
         super(2400,2400, 200,200);
-        poziom = 1;
+        level = 1;
         hp = 50;
         texture = new Texture("home.png");
     }
 
-    public int getPoziom() {
-        return poziom;
+    public int getLevel() {
+        return level;
     }
 
-    public void setPoziom(int poziom) {
-        this.poziom = poziom;
+    public void setLevel(int level) {
+        this.level = level;
     }
 
     public int getHp() {

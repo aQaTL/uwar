@@ -4,22 +4,22 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-public class UWar extends Game{
-	public SpriteBatch batch;
-	public BitmapFont font;
+public class UWar extends Game {
+    public SpriteBatch batch;
+    public BitmapFont font;
 
-	public void create() {
-		batch = new SpriteBatch();
-		font = new BitmapFont();
-		this.setScreen(new Menu(this));
-	}
+    public void create() {
+        batch = new SpriteBatch();
+        font = new BitmapFont();
+        this.setScreen(new Menu(this));
+    }
 
-	public void render() {
-		super.render();
-	}
+    public void render() {
+        super.render();
+    }
 
-	public void dispose() {
-		batch.dispose();
-		font.dispose();
-	}
+    public void dispose() {
+        batch.dispose();
+        font.dispose();
+    }
 }
