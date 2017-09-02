@@ -88,11 +88,11 @@ public class Turn {
         this.breakTimeout = breakTimeout;
     }
 
-    public void updateAttackTimeout(){
+    public void updateAttackTimeout() {
         attackTimeout += 5;
     }
 
-    public void changeTimeBreak(){
+    public void changeTimeBreak() {
         breakTimeout += 2;
     }
 }

@@ -16,6 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import pl.bugajsky.entities.Player;
 
 /**
  * Created by mariuszbugajski on 07.04.2017.
@@ -62,17 +63,17 @@ public class End implements Screen {
         exitButton.setHeight(25f);
         exitButton.setPosition(Gdx.graphics.getWidth() * 0.65f, Gdx.graphics.getHeight() * 0.3f);
 
-        againButton.addListener(new ClickListener(){
+        againButton.addListener(new ClickListener() {
             @Override
-            public void clicked(InputEvent event, float x, float y){
+            public void clicked(InputEvent event, float x, float y) {
                 dispose();
                 game.setScreen(new Game(game));
             }
         });
 
-        exitButton.addListener(new ClickListener(){
+        exitButton.addListener(new ClickListener() {
             @Override
-            public void clicked(InputEvent event, float x, float y){
+            public void clicked(InputEvent event, float x, float y) {
                 dispose();
                 Gdx.app.exit();
             }

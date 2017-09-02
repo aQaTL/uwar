@@ -1,4 +1,4 @@
-package pl.bugajsky;
+package pl.bugajsky.entities;
 
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -7,15 +7,15 @@ import com.badlogic.gdx.math.Rectangle;
 /**
  * Created by mariuszbugajski on 07.04.2017.
  */
-public class Base extends Rectangle{
+public class Base extends Rectangle {
 
     private int level;
     private int hp;
     private Pixmap pixmap;
     private Texture texture;
 
-    public Base(){
-        super(2400,2400, 200,200);
+    public Base() {
+        super(2400, 2400, 200, 200);
         level = 1;
         hp = 50;
         texture = new Texture("home.png");

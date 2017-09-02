@@ -1,4 +1,4 @@
-package pl.bugajsky;
+package pl.bugajsky.entities;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Rectangle;
+import pl.bugajsky.Direction;
 
 import java.util.Random;
 
@@ -21,8 +22,8 @@ public class Monster extends Rectangle {
     private double speed;
     private Texture texture;
     private Pixmap pixmap;
-    private int moveDirection; //Kierunek
-    private int moveQuantity;  //ilosc
+    private int moveDirection;
+    private int moveQuantity;
     private Random r;
     private boolean boss;
     private float moveTime;
@@ -167,13 +168,13 @@ public class Monster extends Rectangle {
         if (moveQuantity == 0) {
             boolean kierunek = r.nextBoolean();
             if (kierunek == false) {
-                if (x > player.getPozycja().x) {
+                if (x > player.getPosition().x) {
                     moveDirection = 0;
                 } else {
                     moveDirection = 2;
                 }
             } else {
-                if (y > player.getPozycja().y) {
+                if (y > player.getPosition().y) {
                     moveDirection = 3;
                 } else {
                     moveDirection = 1;
@@ -183,20 +184,19 @@ public class Monster extends Rectangle {
         }
     }
 
-    //    Generowanie kierunku strzału na podstawie położenia gracza
-    public int generateDirectionShoot(Player player) {
+    public Direction generateDirectionShoot(Player player) {
         boolean direction = r.nextBoolean();
         if (!direction) {
-            if (x > player.getPozycja().x) {
-                return 0;
+            if (x > player.getPosition().x) {
+                return Direction.WEST;
             } else {
-                return 2;
+                return Direction.EAST;
             }
         } else {
-            if (y > player.getPozycja().y) {
-                return 3;
+            if (y > player.getPosition().y) {
+                return Direction.SOUTH;
             } else {
-                return 1;
+                return Direction.NORTH;
             }
         }
     }

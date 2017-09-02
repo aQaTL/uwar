@@ -9,7 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 /**
  * Created by mariuszbugajski on 12.03.2017.
  */
-public class Interface extends Actor{
+public class Interface extends Actor {
     private String player;
     private String score;
     private String life;
@@ -23,7 +23,7 @@ public class Interface extends Actor{
     private BitmapFont infoFont;
     private BitmapFont giftFont;
 
-    public Interface(){
+    public Interface() {
         playerFont = new BitmapFont();
         scoreFont = new BitmapFont();
         lifeFont = new BitmapFont();
@@ -89,7 +89,7 @@ public class Interface extends Actor{
     }
 
     @Override
-    public void draw(Batch batch, float parentAlpha){
+    public void draw(Batch batch, float parentAlpha) {
         playerFont.draw(batch, player, 5, 475);
         scoreFont.draw(batch, score, 300, 475);
         lifeFont.draw(batch, life, 570, 475);

@@ -1,9 +1,13 @@
-package pl.bugajsky;
+package pl.bugajsky.entities;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Rectangle;
+import pl.bugajsky.Interface;
+import pl.bugajsky.Shot;
+import pl.bugajsky.entities.Monster;
+import pl.bugajsky.entities.Player;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -12,29 +16,24 @@ import java.util.Random;
 /**
  * Created by mariuszbugajski on 16.04.2017.
  */
-public class Gift extends Rectangle{
+public class Gift extends Rectangle {
     private int type;
-//    private Pixmap pixmap;
     private Texture texture;
     private Sprite sprite;
     private float time;
 
     public Gift(int x, int y) {
-        //		Rysowanie prezentu
-        super(x,y,32,32);
-//        pixmap = new Pixmap(32, 32, Pixmap.Format.RGBA8888);
-//        pixmap.setColor(Color.PURPLE);
-//        pixmap.fillRectangle(0,0, 32, 32);
+        super(x, y, 32, 32);
+
         texture = new Texture("gift.png");
         sprite = new Sprite(texture);
-//        pixmap.dispose();
-        Random r = new Random();
-//        type = 3;
-        type = r.nextInt(7);
-        time = 20;
-//        type = 11;
         sprite.setX(x);
         sprite.setY(y);
+
+        Random r = new Random();
+        type = r.nextInt(7);
+
+        time = 20;
     }
 
     public int getType() {
@@ -44,14 +43,6 @@ public class Gift extends Rectangle{
     public void setType(int type) {
         this.type = type;
     }
-
-//    public Pixmap getPixmap() {
-//        return pixmap;
-//    }
-
-//    public void setPixmap(Pixmap pixmap) {
-//        this.pixmap = pixmap;
-//    }
 
     public Texture getTexture() {
         return texture;
@@ -77,35 +68,37 @@ public class Gift extends Rectangle{
         this.time = time;
     }
 
-    public void animation(){
+    public void performAnimation() {
         getSprite().rotate(-2);
+        setX(sprite.getX());
+        setY(sprite.getY());
     }
 
-    public void getGift(Player player, LinkedList<Monster> monsters, LinkedList<Shot> shootsPlayer, LinkedList<Shot> shootsMonster, Interface myInterface){
-        if(getType() == 0){
+    public void getGift(Player player, LinkedList<Monster> monsters, LinkedList<Shot> shootsPlayer, LinkedList<Shot> shootsMonster, Interface myInterface) {
+        if (getType() == 0) {
             player.setHp(player.getHp() + 10);
             myInterface.setInfo("Dodano 10pkt zycia");
-        }else if(getType() == 1){
+        } else if (getType() == 1) {
             player.setHp(player.getHp() - 10);
             myInterface.setInfo("Odjeto 10pkt zycia");
-        }else if(getType() == 2){
+        } else if (getType() == 2) {
             player.setSpeed(player.getSpeed() + 50);
             myInterface.setInfo("Zwiekszono szybkosc gracza");
-        }else if(getType() == 3){
+        } else if (getType() == 3) {
             player.setSpeed(player.getSpeed() - 50);
             myInterface.setInfo("Zmniejszono szybkosc gracza");
-        }else if(getType() == 4){
-            for(Iterator<Shot> it = shootsMonster.iterator(); it.hasNext();) {
+        } else if (getType() == 4) {
+            for (Iterator<Shot> it = shootsMonster.iterator(); it.hasNext(); ) {
                 Shot shot = it.next();
                 it.remove();
                 myInterface.setInfo("Usunieto wszystkie strzaly wrogow");
             }
-        }else if(getType() == 5){
+        } else if (getType() == 5) {
             for (Monster monster : monsters) {
                 monster.setSpeed(monster.getSpeed() + 1);
                 myInterface.setInfo("Zwiekszono szybkosc wrogow");
             }
-        }else if(getType() == 6){
+        } else if (getType() == 6) {
             for (Monster monster : monsters) {
                 monster.setSpeed(monster.getSpeed() - 1);
                 myInterface.setInfo("Zmniejszono szybkosc wroga");

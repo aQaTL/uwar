@@ -37,5 +37,5 @@ public class PlayerStats {
     public void setEnemies(int enemies) {
         this.enemies = enemies;
     }
-    
+
 }

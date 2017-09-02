@@ -59,17 +59,17 @@ public class Menu implements Screen {
         image.setWidth(100f);
         image.setPosition(Gdx.graphics.getWidth() / 2 - image.getWidth() / 2, Gdx.graphics.getHeight() * 0.8f);
 
-        exitButton.addListener(new ClickListener(){
+        exitButton.addListener(new ClickListener() {
             @Override
-            public void clicked(InputEvent event, float x, float y){
+            public void clicked(InputEvent event, float x, float y) {
                 dispose();
                 Gdx.app.exit();
             }
         });
 
-        playButton.addListener(new ClickListener(){
+        playButton.addListener(new ClickListener() {
             @Override
-            public void clicked(InputEvent event, float x, float y){
+            public void clicked(InputEvent event, float x, float y) {
                 dispose();
                 game.setScreen(new Game(game));
 
