@@ -11,33 +11,40 @@ import pl.bugajsky.Direction;
 
 import java.util.Random;
 
+import static pl.bugajsky.Direction.*;
+
 /**
  * Created by mariuszbugajski on 02.03.2017.
  */
 
-public class Monster extends Rectangle {
+public class Monster extends Rectangle implements Drawable {
 
     private int hp;
     private int score;
     private double speed;
     private Texture texture;
     private Pixmap pixmap;
-    private int moveDirection;
+    private Direction moveDirection;
     private int moveQuantity;
     private Random r;
     private boolean boss;
     private float moveTime;
     private int step;
-    private Sprite sprite;
 
-    public Monster(int x, int y, int lvl) {
+    private TextureAtlas atlas;
+    private Sprite currSprite;
+
+    public Monster(int x, int y, int lvl, TextureAtlas atlas) {
         super(x, y, 20, 20);
+
+        this.atlas = atlas;
+
         r = new Random();
         hp = r.nextInt(lvl) + 1;
         speed = r.nextInt(lvl * 5) + 1;
         score = r.nextInt(lvl) + 1;
         boss = false;
-        moveDirection = r.nextInt(4);
+        moveDirection = Direction.fromIndex(r.nextInt(4));
         moveQuantity = r.nextInt(5) + 1;
         pixmap = new Pixmap(30, 30, Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.BLUE);
@@ -46,17 +53,21 @@ public class Monster extends Rectangle {
         pixmap.dispose();
         moveTime = 0;
         step = 1;
-        sprite = new Sprite();
+
+        currSprite = atlas.createSprite(Integer.toString(getStep()));
     }
 
-    public Monster(int x, int y, int hp, int speed, int score) {
+    public Monster(int x, int y, int hp, int speed, int score, TextureAtlas atlas) {
         super(x, y, 20, 20);
+
+        this.atlas = atlas;
+
         r = new Random();
         this.hp = hp;
         this.speed = speed;
         this.score = score;
         boss = true;
-        moveDirection = r.nextInt(4);
+        moveDirection = Direction.fromIndex(r.nextInt(4));
         moveQuantity = r.nextInt(5) + 1;
         pixmap = new Pixmap(50, 50, Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.BLUE);
@@ -65,7 +76,8 @@ public class Monster extends Rectangle {
         pixmap.dispose();
         moveTime = 0;
         step = 1;
-        sprite = new Sprite();
+
+        currSprite = atlas.createSprite(Integer.toString(getStep()));
     }
 
     public Texture getTexture() {
@@ -80,7 +92,7 @@ public class Monster extends Rectangle {
         return speed;
     }
 
-    public int getMoveDirection() {
+    public Direction getMoveDirection() {
         return moveDirection;
     }
 
@@ -100,7 +112,7 @@ public class Monster extends Rectangle {
         this.hp = hp;
     }
 
-    public void setMoveDirection(int moveDirection) {
+    public void setMoveDirection(Direction moveDirection) {
         this.moveDirection = moveDirection;
     }
 
@@ -124,31 +136,29 @@ public class Monster extends Rectangle {
         this.boss = boss;
     }
 
-    //    ruch monstera
-
     public void moveToLeft() {
-        if (moveDirection == 0) {
+        if (moveDirection == WEST) {
             if (x > 0)
                 x -= speed;
         }
     }
 
     public void moveToRight() {
-        if (moveDirection == 2) {
+        if (moveDirection == EAST) {
             if (x < 5000)
                 x += speed;
         }
     }
 
     public void moveToTop() {
-        if (moveDirection == 1) {
+        if (moveDirection == NORTH) {
             if (y < 5000)
                 y += speed;
         }
     }
 
     public void moveToBottom() {
-        if (moveDirection == 3) {
+        if (moveDirection == SOUTH) {
             if (y > 0)
                 y -= speed;
         }
@@ -157,7 +167,7 @@ public class Monster extends Rectangle {
     //    generowanie nowych ruchów
     public void generateMove() {
         if (moveQuantity == 0) {
-            moveDirection = r.nextInt(4);
+            moveDirection = Direction.fromIndex(r.nextInt(4));
             moveQuantity = r.nextInt(5) + 100;
             System.out.println(moveQuantity);
         }
@@ -166,37 +176,25 @@ public class Monster extends Rectangle {
     //    generowanie nowych ruchów na bazie położenia bohatera
     public void generateMove(Player player) {
         if (moveQuantity == 0) {
-            boolean kierunek = r.nextBoolean();
-            if (kierunek == false) {
-                if (x > player.getPosition().x) {
-                    moveDirection = 0;
-                } else {
-                    moveDirection = 2;
-                }
-            } else {
-                if (y > player.getPosition().y) {
-                    moveDirection = 3;
-                } else {
-                    moveDirection = 1;
-                }
-            }
+            boolean direction = r.nextBoolean();
+            moveDirection = generateDirectionTowardsPlayer(player);
             moveQuantity = r.nextInt(20) + 5;
         }
     }
 
-    public Direction generateDirectionShoot(Player player) {
+    public Direction generateDirectionTowardsPlayer(Player player) {
         boolean direction = r.nextBoolean();
         if (!direction) {
             if (x > player.getPosition().x) {
-                return Direction.WEST;
+                return WEST;
             } else {
-                return Direction.EAST;
+                return EAST;
             }
         } else {
             if (y > player.getPosition().y) {
-                return Direction.SOUTH;
+                return SOUTH;
             } else {
-                return Direction.NORTH;
+                return NORTH;
             }
         }
     }
@@ -236,10 +234,12 @@ public class Monster extends Rectangle {
         }
     }
 
-    public void draw(SpriteBatch batch, TextureAtlas region, float angle) {
-        sprite.set(region.createSprite("" + getStep()));
-        sprite.setPosition(x, y);
-        sprite.rotate(angle);
-        sprite.draw(batch);
+    @Override
+    public void draw(SpriteBatch batch) {
+        currSprite = atlas.createSprite(Integer.toString(getStep()));
+        currSprite.setPosition(x, y);
+        currSprite.rotate(moveDirection.toAngle());
+        currSprite.draw(batch);
     }
+
 }

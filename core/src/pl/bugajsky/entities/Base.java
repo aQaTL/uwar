@@ -2,12 +2,13 @@ package pl.bugajsky.entities;
 
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 
 /**
  * Created by mariuszbugajski on 07.04.2017.
  */
-public class Base extends Rectangle {
+public class Base extends Rectangle implements Drawable {
 
     private int level;
     private int hp;
@@ -51,5 +52,10 @@ public class Base extends Rectangle {
 
     public void setTexture(Texture texture) {
         this.texture = texture;
+    }
+
+    @Override
+    public void draw(SpriteBatch batch) {
+        batch.draw(getTexture(), getX(), getY(), getWidth(), getHeight());
     }
 }

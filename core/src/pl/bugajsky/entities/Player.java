@@ -1,8 +1,5 @@
 package pl.bugajsky.entities;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -14,7 +11,7 @@ import pl.bugajsky.Direction;
  * Created by mariuszbugajski on 25.02.2017.
  */
 
-public class Player extends Circle {
+public class Player extends Circle implements Drawable {
 
     private int hp;
     private float speed;
@@ -33,12 +30,13 @@ public class Player extends Circle {
     private Vector2 velocity;
     private Vector2 movement;
 
-    private Texture texture;
-    private Pixmap pixmap;
-    private Sprite sprite;
+    private TextureAtlas atlas;
+    private Sprite currSprite;
 
-    public Player(float x, float y) {
+    public Player(float x, float y, TextureAtlas atlas) {
         super(x, y, 10);
+        this.atlas = atlas;
+
         hp = 1;
 //        hp = 50;
         score = 0;
@@ -53,14 +51,10 @@ public class Player extends Circle {
         vector = new Vector2();
         velocity = new Vector2();
         movement = new Vector2();
-        pixmap = new Pixmap(20, 20, Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.YELLOW);
-        pixmap.fillCircle(10, 10, 10);
-        texture = new Texture(pixmap);
-        pixmap.dispose();
         moveTime = 0;
         step = 1;
-        sprite = new Sprite();
+
+        currSprite = atlas.createSprite(Integer.toString(getStep()));
     }
 
     public int getHp() {
@@ -77,22 +71,6 @@ public class Player extends Circle {
 
     public void setScore(int score) {
         this.score = score;
-    }
-
-    public Texture getTexture() {
-        return texture;
-    }
-
-    public void setTexture(Texture texture) {
-        this.texture = texture;
-    }
-
-    public Pixmap getPixmap() {
-        return pixmap;
-    }
-
-    public void setPixmap(Pixmap pixmap) {
-        this.pixmap = pixmap;
     }
 
     public float getSpeed() {
@@ -187,6 +165,14 @@ public class Player extends Circle {
         this.step = step;
     }
 
+    public float getWidth() {
+        return currSprite.getWidth();
+    }
+
+    public float getHeight() {
+        return currSprite.getHeight();
+    }
+
     public void stepAnimation(float time) {
         setMoveTime(getMoveTime() + time);
         if (getMoveTime() > 0.15) {
@@ -274,23 +260,11 @@ public class Player extends Circle {
         runMove(newPosition, 3, dt);
     }
 
-    public void draw(SpriteBatch batch, TextureAtlas region, float angle) {
-        sprite.set(region.createSprite("" + getStep()));
-        sprite.setPosition(getPosition().x, getPosition().y);
-        sprite.rotate(angle);
-        sprite.draw(batch);
+    public void draw(SpriteBatch batch) {
+        currSprite = atlas.createSprite(Integer.toString(getStep()));
+        currSprite.setPosition(getPosition().x, getPosition().y);
+        currSprite.rotate(direction.toAngle());
+        currSprite.draw(batch);
     }
 
-    public float getAngle() {
-        switch (this.getDirection()) {
-            case WEST:
-                return 180;
-            case EAST:
-                return 0;
-            case NORTH:
-                return 90;
-            default:
-                return 280;
-        }
-    }
 }

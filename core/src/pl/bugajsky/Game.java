@@ -4,17 +4,16 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g2d.*;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import pl.bugajsky.entities.Base;
-import pl.bugajsky.entities.Gift;
-import pl.bugajsky.entities.Monster;
-import pl.bugajsky.entities.Player;
+import pl.bugajsky.entities.*;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -81,9 +80,12 @@ public class Game implements Screen {
         playerBase = new Base();
 
         camera = new OrthographicCamera(5000, 5000);
-        camera.zoom = (float) 0.2;
+        camera.zoom = 0.2f;
 
-        player = new Player(camera.viewportWidth / 2f, camera.viewportHeight / 2f);
+        player = new Player(
+                camera.viewportWidth / 2.0f,
+                camera.viewportHeight / 2.0f,
+                textureAtlasPlayer);
 
         map = new TmxMapLoader().load("map/map.tmx");
         renderer = new OrthogonalTiledMapRenderer(map);
@@ -118,7 +120,6 @@ public class Game implements Screen {
 
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-//        renderer.setView(camera);
         renderer.render();
 
         stage.act(Gdx.graphics.getDeltaTime());
@@ -128,43 +129,32 @@ public class Game implements Screen {
 
         batch.draw(gameArea, 0, 0);
 
-        batch.draw(playerBase.getTexture(), playerBase.getX(), playerBase.getY(), playerBase.getWidth(), playerBase.getHeight());
+        playerBase.draw(batch);
 
-        player.draw(batch, textureAtlasPlayer, player.getAngle());
+        player.draw(batch);
 
-//		Rysowanie strzałów
         for (Shot s : playerShots) {
             batch.draw(textureShoot, s.x, s.y);
         }
 
-//		Rysowanie strzałów potworów
         for (Shot s : monstersShots) {
             batch.draw(textureShoot, s.x, s.y);
         }
 
-//		Rysowanie potworów z listy
-        for (Monster m : monsters) {
-            if (m.getMoveDirection() == 0) {
-                m.draw(batch, textureAtlasEnemy, 180); // lewo
-            } else if (m.getMoveDirection() == 2) {
-                m.draw(batch, textureAtlasEnemy, 0); //prawo
-            } else if (m.getMoveDirection() == 1) {
-                m.draw(batch, textureAtlasEnemy, 90); //dol
-            } else {
-                m.draw(batch, textureAtlasEnemy, 280); //gora
-            }
-//            batch.draw(m.getTexture(), m.x, m.y);
+        drawEntities(monsters, batch);
+
+        for (Gift gift : gifts) {
+            gift.getSprite().draw(batch);
         }
 
-//      Rysowanie prezentów
-        for (Gift g : gifts) {
-            g.getSprite().draw(batch);
-        }
-
-//		Wartość zooma
-//		font.draw(batch,camera.zoom + "",2500,2700);
+        //Zoom value
+        //font.draw(batch,camera.zoom + "",2500,2700);
 
         batch.end();
+    }
+
+    private void drawEntities(List<? extends Drawable> entities, SpriteBatch batch) {
+        entities.forEach(o -> o.draw(batch));
     }
 
     private void update(float dt) {
@@ -237,9 +227,9 @@ public class Game implements Screen {
             }
 
 //        sprawdzenie czy nie skończył się czas odpoczynku
-            if (turn.getTime() < 0 && turn.isTyp() == true) {
-                Double iloscpotworkow = turn.getMonstersLimit() * 1.5;
-                turn.setMonstersLimit(iloscpotworkow.intValue());
+            if (turn.getTime() < 0 && turn.isTyp()) {
+                int monstersLimit = (int) (turn.getMonstersLimit() * 1.5);
+                turn.setMonstersLimit(monstersLimit);
                 turn.setTyp(false);
                 turn.changeTimeBreak();
                 turn.setTime(turn.getAttackTimeout());
@@ -260,8 +250,14 @@ public class Game implements Screen {
                 myinterface.setInfo("");
             }
 
-            if (turn.isBoss() == true && turn.isBossAdded() == false) {
-                monsters.add(new Monster(r.nextInt(5000), r.nextInt(5000), r.nextInt(25), r.nextInt(20), r.nextInt(100)));
+            if (turn.isBoss() && !turn.isBossAdded()) {
+                monsters.add(new Monster(
+                        r.nextInt(5000),
+                        r.nextInt(5000),
+                        r.nextInt(25),
+                        r.nextInt(20),
+                        r.nextInt(100),
+                        textureAtlasEnemy));
                 turn.setBossAdded(true);
             }
 
@@ -323,7 +319,7 @@ public class Game implements Screen {
             int l1 = r.nextInt(100);
             int l2 = r.nextInt(100);
             if (l1 == l2) {
-                Direction shotDirection = monster.generateDirectionShoot(player);
+                Direction shotDirection = monster.generateDirectionTowardsPlayer(player);
                 monstersShots.add(new Shot(
                         monster.x + monster.getTexture().getWidth() / 2 - 5,
                         monster.y + monster.getTexture().getHeight() / 2 - 5,
@@ -373,8 +369,8 @@ public class Game implements Screen {
 
             if (timeShoot > 0.2) {
                 playerShots.add(new Shot(
-                        player.x + player.getTexture().getWidth() / 2 - 5,
-                        player.y + player.getTexture().getHeight() / 2 - 5,
+                        player.x + player.getWidth() / 2 - 5,
+                        player.y + player.getHeight() / 2 - 5,
                         1,
                         player.getDirection()));
                 timeShoot = 0;
@@ -404,7 +400,11 @@ public class Game implements Screen {
         timerMonster += Gdx.graphics.getDeltaTime();
         if (timerMonster > 1) {
             if (monsters.size() < turn.getMonstersLimit() && turn.isTyp() == false)
-                monsters.add(new Monster(r.nextInt(5000), r.nextInt(5000), playerStats.getLevel()));
+                monsters.add(new Monster(
+                        r.nextInt(5000),
+                        r.nextInt(5000),
+                        playerStats.getLevel(),
+                        textureAtlasEnemy));
             timerMonster = 0;
         }
 
@@ -714,7 +714,6 @@ public class Game implements Screen {
     @Override
     public void dispose() {
         batch.dispose();
-        player.getTexture().dispose();
         font.dispose();
         gameArea.dispose();
 //		home.dispose();
