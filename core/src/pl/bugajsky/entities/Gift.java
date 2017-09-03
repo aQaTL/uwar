@@ -4,10 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Rectangle;
-import pl.bugajsky.Interface;
+import pl.bugajsky.GameUI;
 import pl.bugajsky.Shot;
-import pl.bugajsky.entities.Monster;
-import pl.bugajsky.entities.Player;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -74,34 +72,34 @@ public class Gift extends Rectangle {
         setY(sprite.getY());
     }
 
-    public void getGift(Player player, LinkedList<Monster> monsters, LinkedList<Shot> shootsPlayer, LinkedList<Shot> shootsMonster, Interface myInterface) {
+    public void getGift(Player player, LinkedList<Monster> monsters, LinkedList<Shot> shootsPlayer, LinkedList<Shot> shootsMonster, GameUI gameUI) {
         if (getType() == 0) {
             player.setHp(player.getHp() + 10);
-            myInterface.setInfo("Dodano 10pkt zycia");
+            gameUI.setInfo("Dodano 10pkt zycia");
         } else if (getType() == 1) {
             player.setHp(player.getHp() - 10);
-            myInterface.setInfo("Odjeto 10pkt zycia");
+            gameUI.setInfo("Odjeto 10pkt zycia");
         } else if (getType() == 2) {
-            player.setSpeed(player.getSpeed() + 50);
-            myInterface.setInfo("Zwiekszono szybkosc gracza");
+            player.setMoveVelocity(player.getMoveVelocity() + 50);
+            gameUI.setInfo("Zwiekszono szybkosc gracza");
         } else if (getType() == 3) {
-            player.setSpeed(player.getSpeed() - 50);
-            myInterface.setInfo("Zmniejszono szybkosc gracza");
+            player.setMoveVelocity(player.getMoveVelocity() - 50);
+            gameUI.setInfo("Zmniejszono szybkosc gracza");
         } else if (getType() == 4) {
             for (Iterator<Shot> it = shootsMonster.iterator(); it.hasNext(); ) {
                 Shot shot = it.next();
                 it.remove();
-                myInterface.setInfo("Usunieto wszystkie strzaly wrogow");
+                gameUI.setInfo("Usunieto wszystkie strzaly wrogow");
             }
         } else if (getType() == 5) {
             for (Monster monster : monsters) {
                 monster.setSpeed(monster.getSpeed() + 1);
-                myInterface.setInfo("Zwiekszono szybkosc wrogow");
+                gameUI.setInfo("Zwiekszono szybkosc wrogow");
             }
         } else if (getType() == 6) {
             for (Monster monster : monsters) {
                 monster.setSpeed(monster.getSpeed() - 1);
-                myInterface.setInfo("Zmniejszono szybkosc wroga");
+                gameUI.setInfo("Zmniejszono szybkosc wroga");
             }
         }
     }

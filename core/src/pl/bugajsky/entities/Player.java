@@ -1,5 +1,6 @@
 package pl.bugajsky.entities;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -13,14 +14,17 @@ import pl.bugajsky.Direction;
 
 public class Player extends Circle implements Drawable {
 
+    private int level;
+
     private int hp;
-    private float speed;
-    private Direction direction;
+    private float moveVelocity;
+    private float runVelocity;
     private int score;
+
+    private Direction direction;
     private float giftTime;
     private int runTime;
     private int giftType;
-    private float speedRun;
     private float moveTime;
     private int step;
 
@@ -40,8 +44,8 @@ public class Player extends Circle implements Drawable {
         hp = 1;
 //        hp = 50;
         score = 0;
-        speed = 250;
-        speedRun = 250 + 50;
+        moveVelocity = 250;
+        runVelocity = 250 + 50;
         direction = Direction.NORTH;
         giftTime = 1;
         runTime = 5;
@@ -55,6 +59,14 @@ public class Player extends Circle implements Drawable {
         step = 1;
 
         currSprite = atlas.createSprite(Integer.toString(getStep()));
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
     }
 
     public int getHp() {
@@ -73,12 +85,12 @@ public class Player extends Circle implements Drawable {
         this.score = score;
     }
 
-    public float getSpeed() {
-        return speed;
+    public float getMoveVelocity() {
+        return moveVelocity;
     }
 
-    public void setSpeed(float speed) {
-        this.speed = speed;
+    public void setMoveVelocity(float moveVelocity) {
+        this.moveVelocity = moveVelocity;
     }
 
     public Direction getDirection() {
@@ -141,12 +153,12 @@ public class Player extends Circle implements Drawable {
         this.runTime = runTime;
     }
 
-    public float getSpeedRun() {
-        return speedRun;
+    public float getRunVelocity() {
+        return runVelocity;
     }
 
-    public void setSpeedRun(float speedRun) {
-        this.speedRun = speedRun;
+    public void setRunVelocity(float runVelocity) {
+        this.runVelocity = runVelocity;
     }
 
     public float getMoveTime() {
@@ -186,7 +198,7 @@ public class Player extends Circle implements Drawable {
 
     public void goMove(Vector2 nowaPozycja, int direction, float dt) {
         vector.set(nowaPozycja).sub(position).nor();
-        velocity.set(vector).scl(speed);
+        velocity.set(vector).scl(moveVelocity);
         movement.set(velocity).scl(dt);
         if (position.dst2(nowaPozycja) > movement.len2()) {
             position.add(movement);
@@ -199,7 +211,7 @@ public class Player extends Circle implements Drawable {
 
     public void runMove(Vector2 nowaPozycja, int direction, float dt) {
         vector.set(nowaPozycja).sub(position).nor();
-        velocity.set(vector).scl(speedRun);
+        velocity.set(vector).scl(runVelocity);
         movement.set(velocity).scl(dt);
         if (position.dst2(nowaPozycja) > movement.len2()) {
             position.add(movement);

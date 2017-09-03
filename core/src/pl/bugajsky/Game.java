@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -28,18 +27,18 @@ public class Game implements Screen {
     final UWar game;
 
     private SpriteBatch batch;
+    private Texture gameArea;
+
     private Player player;
     private Base playerBase;
-    private TiledMap map;
-    private OrthogonalTiledMapRenderer renderer;
 
     private OrthographicCamera camera;
-    private Texture gameArea;
+    private OrthogonalTiledMapRenderer renderer;
+
     private float timeHome;
     private float timeShoot;
     private float timerMonster;
     private float giftTimer;
-    private Pixmap pixmap;
     private Random r;
 
     private LinkedList<Shot> playerShots;
@@ -47,14 +46,12 @@ public class Game implements Screen {
     private LinkedList<Monster> monsters;
     private LinkedList<Gift> gifts;
 
-    private BitmapFont font;
     private Stage stage;
-    private Interface myinterface;
+    private GameUI gameUI;
     private Turn turn;
-    private PlayerStats playerStats;
-    private Texture textureShoot;
-    private TextureAtlas textureAtlasPlayer;
-    private TextureAtlas textureAtlasEnemy;
+    private Texture shotTexture;
+    private TextureAtlas playerTextureAtlas;
+    private TextureAtlas enemyTextureAtlas;
 
     public Game(final UWar game) {
         this.game = game;
@@ -62,13 +59,12 @@ public class Game implements Screen {
         stage = new Stage(new ScreenViewport());
 
         batch = new SpriteBatch();
-        textureShoot = new Texture("shoot.png");
+        shotTexture = new Texture("shoot.png");
 
-        textureAtlasPlayer = new TextureAtlas(Gdx.files.internal("player.pack"));
-        textureAtlasEnemy = new TextureAtlas(Gdx.files.internal("enemy.pack"));
+        playerTextureAtlas = new TextureAtlas(Gdx.files.internal("player.pack"));
+        enemyTextureAtlas = new TextureAtlas(Gdx.files.internal("enemy.pack"));
 
         turn = new Turn(false, false, 60);
-        playerStats = new PlayerStats();
 
         playerShots = new LinkedList<>();
         monstersShots = new LinkedList<>();
@@ -85,17 +81,17 @@ public class Game implements Screen {
         player = new Player(
                 camera.viewportWidth / 2.0f,
                 camera.viewportHeight / 2.0f,
-                textureAtlasPlayer);
+                playerTextureAtlas);
 
-        map = new TmxMapLoader().load("map/map.tmx");
+        TiledMap map = new TmxMapLoader().load("map/map.tmx");
         renderer = new OrthogonalTiledMapRenderer(map);
 
-        myinterface = new Interface();
-        stage.addActor(myinterface);
+        gameUI = new GameUI();
+        stage.addActor(gameUI);
         Gdx.input.setInputProcessor(stage);
 
         //game arena initialization
-        pixmap = new Pixmap(5000, 5000, Pixmap.Format.RGBA8888);
+        Pixmap pixmap = new Pixmap(5000, 5000, Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.RED);
         pixmap.drawRectangle(0, 0, 5000, 5000);
         gameArea = new Texture(pixmap);
@@ -108,9 +104,6 @@ public class Game implements Screen {
         timerMonster = 1;
 
         giftTimer = 0;
-
-        font = new BitmapFont();
-        font.setColor(Color.WHITE);
     }
 
 
@@ -134,11 +127,11 @@ public class Game implements Screen {
         player.draw(batch);
 
         for (Shot s : playerShots) {
-            batch.draw(textureShoot, s.x, s.y);
+            batch.draw(shotTexture, s.x, s.y);
         }
 
         for (Shot s : monstersShots) {
-            batch.draw(textureShoot, s.x, s.y);
+            batch.draw(shotTexture, s.x, s.y);
         }
 
         drawEntities(monsters, batch);
@@ -158,28 +151,13 @@ public class Game implements Screen {
     }
 
     private void update(float dt) {
-
-//      warunek na koniec gry
-        if (player.getHp() < 1 || playerBase.getHp() < 1) {
-            game.setScreen(new End(game, player));
-        }
+        checkGameEndCondition();
 
         camera.update();
         batch.setProjectionMatrix(camera.combined);
         renderer.setView(camera);
-//        renderer.render();
 
-//		ustawienie współrzędnych playera
-        myinterface.setPlayer("Poziom: " + playerStats.getLevel());
-
-//		ustawienie życia bohatera
-        myinterface.setLife("Life: " + player.getHp());
-
-//		ustawienie obecnego wyniku
-        myinterface.setScore(player.getScore() + "");
-
-//		ustawienie życia bazy
-        myinterface.setBaza("Base: " + playerBase.getHp());
+        gameUI.updateStats(player, playerBase);
 
 //		ustawienie kamery tak aby mapa była maksymalnie do krańców ekranu
 //		ustawienie kamery z lewej strony i prawej strony
@@ -214,7 +192,7 @@ public class Game implements Screen {
         }
 
 //        TURA
-        if (playerStats.getLevel() % 5 != 0) {
+        if (player.getLevel() % 5 != 0) {
             turn.setTime(turn.getTime() - Gdx.graphics.getDeltaTime());
 
 //        sprawdzenie czy nie skończył się czas ataku
@@ -222,7 +200,7 @@ public class Game implements Screen {
                 turn.setTyp(true);
                 turn.updateAttackTimeout();
                 turn.setTime(turn.getBreakTimeout());
-                myinterface.setInfo("Przerwa od ataku");
+                gameUI.setInfo("Przerwa od ataku");
 //            System.out.println("Koniec czasu ataku");
             }
 
@@ -233,9 +211,9 @@ public class Game implements Screen {
                 turn.setTyp(false);
                 turn.changeTimeBreak();
                 turn.setTime(turn.getAttackTimeout());
-                playerStats.setLevel(playerStats.getLevel() + 1);
-                myinterface.setInfo("Atak");
-                if (playerStats.getLevel() % 5 == 0) {
+                player.setLevel(player.getLevel() + 1);
+                gameUI.setInfo("Atak");
+                if (player.getLevel() % 5 == 0) {
                     turn.setBoss(true);
                 } else {
                     turn.setBoss(false);
@@ -247,7 +225,7 @@ public class Game implements Screen {
             turn.setBossTime(turn.getBossTime() + Gdx.graphics.getDeltaTime());
 
             if (turn.getBossTime() > 5) {
-                myinterface.setInfo("");
+                gameUI.setInfo("");
             }
 
             if (turn.isBoss() && !turn.isBossAdded()) {
@@ -257,7 +235,7 @@ public class Game implements Screen {
                         r.nextInt(25),
                         r.nextInt(20),
                         r.nextInt(100),
-                        textureAtlasEnemy));
+                        enemyTextureAtlas));
                 turn.setBossAdded(true);
             }
 
@@ -280,19 +258,19 @@ public class Game implements Screen {
                 turn.setBossAdded(false);
                 turn.setTyp(false);
                 turn.setTime(turn.getAttackTimeout());
-                playerStats.setLevel(playerStats.getLevel() + 1);
+                player.setLevel(player.getLevel() + 1);
             }
         }
 
 
 //        Usunięcie info o "Przewa od ataku"
         if (!turn.isTyp() && turn.getTime() < 5) {
-            myinterface.setInfo("");
+            gameUI.setInfo("");
         }
 
 //        Usunięcie info o "Atak"
         if (turn.isTyp() && turn.getTime() < 2) {
-            myinterface.setInfo("");
+            gameUI.setInfo("");
         }
 
 
@@ -399,12 +377,12 @@ public class Game implements Screen {
 //		POTWORY
         timerMonster += Gdx.graphics.getDeltaTime();
         if (timerMonster > 1) {
-            if (monsters.size() < turn.getMonstersLimit() && turn.isTyp() == false)
+            if (monsters.size() < turn.getMonstersLimit() && !turn.isTyp())
                 monsters.add(new Monster(
                         r.nextInt(5000),
                         r.nextInt(5000),
-                        playerStats.getLevel(),
-                        textureAtlasEnemy));
+                        player.getLevel(),
+                        enemyTextureAtlas));
             timerMonster = 0;
         }
 
@@ -551,34 +529,34 @@ public class Game implements Screen {
 
 //        sprawdzenie czasu obecnego prezentu
         if (player.getGiftTime() < 10 && player.getGiftType() != -1) {
-            myinterface.setInfo("");
+            gameUI.setInfo("");
         }
 
 //        Show bonus time
         if (player.getGiftType() != -1) {
             player.setGiftTime(player.getGiftTime() - Gdx.graphics.getDeltaTime());
             if (player.getGiftType() == 2 || player.getGiftType() == 3 || player.getGiftType() == 5 || player.getGiftType() == 6) {
-                myinterface.setGift("Bonus: " + player.getGiftTime());
+                gameUI.setGift("Bonus: " + player.getGiftTime());
             }
         }
 
 //        Sprawdzenie czasu obencego prezentu
         if (player.getGiftTime() < 0 && player.getGiftType() != -1) {
             if (player.getGiftType() == 2) {
-                player.setSpeed(player.getSpeed() - 50);
-                myinterface.setGift("");
+                player.setMoveVelocity(player.getMoveVelocity() - 50);
+                gameUI.setGift("");
             } else if (player.getGiftType() == 3) {
-                player.setSpeed(player.getSpeed() + 50);
-                myinterface.setGift("");
+                player.setMoveVelocity(player.getMoveVelocity() + 50);
+                gameUI.setGift("");
             } else if (player.getGiftType() == 5) {
                 for (Monster monster : monsters) {
                     monster.setSpeed(monster.getSpeed() - 1);
-                    myinterface.setGift("");
+                    gameUI.setGift("");
                 }
             } else if (player.getGiftType() == 6) {
                 for (Monster monster : monsters) {
                     monster.setSpeed(monster.getSpeed() + 1);
-                    myinterface.setGift("");
+                    gameUI.setGift("");
                 }
             }
 
@@ -600,7 +578,7 @@ public class Game implements Screen {
 //                    }
 //                    dfkngkdjs
                     it.remove();
-                    gift.getGift(player, monsters, playerShots, monstersShots, myinterface);
+                    gift.getGift(player, monsters, playerShots, monstersShots, gameUI);
                 }
             }
         }
@@ -621,6 +599,12 @@ public class Game implements Screen {
         removeCollidingObjects(playerShots, gifts);
 
         updateGiftsTime();
+    }
+
+    private void checkGameEndCondition() {
+        if (player.getHp() < 1 || playerBase.getHp() < 1) {
+            game.setScreen(new End(game, player));
+        }
     }
 
     private void processInput() {
@@ -714,12 +698,10 @@ public class Game implements Screen {
     @Override
     public void dispose() {
         batch.dispose();
-        font.dispose();
         gameArea.dispose();
-//		home.dispose();
         stage.dispose();
-        textureAtlasPlayer.dispose();
-        textureAtlasEnemy.dispose();
+        playerTextureAtlas.dispose();
+        enemyTextureAtlas.dispose();
         gameArea.dispose();
     }
 }
