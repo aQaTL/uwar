@@ -3,6 +3,7 @@ package pl.bugajsky;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -52,11 +53,14 @@ public class Game implements Screen {
     private Texture shotTexture;
     private TextureAtlas playerTextureAtlas;
     private TextureAtlas enemyTextureAtlas;
+    private Sound sound;
 
     public Game(final UWar game) {
         this.game = game;
 
         stage = new Stage(new ScreenViewport());
+
+        sound = Gdx.audio.newSound(Gdx.files.internal("shoot.wav"));
 
         batch = new SpriteBatch();
         shotTexture = new Texture("shoot.png");
@@ -310,7 +314,7 @@ public class Game implements Screen {
 //		dodanie strzałów
         timeShoot += Gdx.graphics.getDeltaTime();
         if (Gdx.input.isKeyPressed(Input.Keys.SPACE) || Gdx.input.isTouched() || Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.UP) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-
+            sound.play(1f);
 //		Kierowanie strzałem
             if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
                 System.out.println("called");
