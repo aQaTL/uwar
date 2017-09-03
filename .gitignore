@@ -14,3 +14,8 @@ hs_err_pid*
 *.jpg
 *.jpeg
 *.gif
+
+# Intellij IDEA project files
+*.ipr
+*.iws
+*.iml
