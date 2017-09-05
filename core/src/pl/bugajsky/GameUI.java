@@ -33,7 +33,7 @@ public class GameUI extends Actor {
         score = Integer.toString(player.getScore());
         this.base = "Base HP: " + base.getHp();
         gift = player.getGiftType() != -1 && player.getGiftTime() > 0 ?
-                Float.toString(player.getGiftTime()) :
+                String.format("%.2f", player.getGiftTime()) :
                 "";
     }
 

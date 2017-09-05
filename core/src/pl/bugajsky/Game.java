@@ -163,37 +163,7 @@ public class Game implements Screen {
 
         gameUI.updateStats(player, playerBase);
 
-//		ustawienie kamery tak aby mapa była maksymalnie do krańców ekranu
-//		ustawienie kamery z lewej strony i prawej strony
-//		operacje dla środka ekranu
-        if (player.x > 500 && player.x < 4500) {
-            if (player.y > 500 && player.y < 4500) {
-                camera.position.set(player.x, player.y, 0);
-            } else {
-                if (player.y < 500) {
-                    camera.position.set(player.x, 500, 0);
-                } else {
-                    camera.position.set(player.x, 4500, 0);
-                }
-            }
-        }
-
-//		operacje dla krańców ekranu
-        if (player.x < 500 || player.x > 4500) {
-            if (player.y < 500 || player.y > 4500) {
-                if (player.x < 500 && player.y < 500) {
-                    camera.position.set(500, 500, 0);
-//				}else if(player.x < 500 && player.y > 4500){
-//					camera.position.set(500, 5000, 0);
-                }
-            } else {
-                if (player.x < 500) {
-                    camera.position.set(500, player.y, 0);
-                } else {
-                    camera.position.set(4500, player.y, 0);
-                }
-            }
-        }
+        updateCameraPosition();
 
 //        TURA
         if (player.getLevel() % 5 != 0) {
@@ -317,7 +287,6 @@ public class Game implements Screen {
             sound.play(1f);
 //		Kierowanie strzałem
             if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-                System.out.println("called");
                 player.setDirection(Direction.NORTH);
             }
 
@@ -603,6 +572,12 @@ public class Game implements Screen {
         removeCollidingObjects(playerShots, gifts);
 
         updateGiftsTime();
+    }
+
+    private void updateCameraPosition() {
+        float xDiff = player.x > 500 && player.x < 4500 ? player.x - camera.position.x : 0;
+        float yDiff = player.y > 500 && player.y < 4500 ? player.y - camera.position.y : 0;
+        camera.translate(xDiff, yDiff);
     }
 
     private void checkGameEndCondition() {
