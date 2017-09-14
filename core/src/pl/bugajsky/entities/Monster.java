@@ -1,11 +1,13 @@
 package pl.bugajsky.entities;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import pl.bugajsky.Direction;
 
@@ -78,6 +80,17 @@ public class Monster extends Rectangle implements Drawable {
         step = 1;
 
         currSprite = atlas.createSprite(Integer.toString(getStep()));
+    }
+
+    public static Monster createBoss(TextureAtlas monsterAtlas) {
+        return new Monster(
+                MathUtils.random.nextInt(5000),
+                MathUtils.random.nextInt(5000),
+                MathUtils.random.nextInt(25),
+                MathUtils.random.nextInt(20),
+                MathUtils.random.nextInt(100),
+                monsterAtlas
+        );
     }
 
     public Texture getTexture() {

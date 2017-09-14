@@ -17,32 +17,29 @@ public class GameUI extends Actor {
     private String score;
     private String life;
     private String base;
-    private String info;
+    private String turnPhaseInfo;
     private String gift;
 
     public GameUI() {
         uiFont = new BitmapFont();
         uiFont.setColor(Color.WHITE);
-        info = "";
+        turnPhaseInfo = "";
         gift = "";
     }
 
-    public void updateStats(Player player, Base base) {
-        level = "Level: " + player.getLevel();
+    public void updateStats(Player player, Base base, Turn turn) {
+        level = "Level: " + turn.getLevel();
         life = "HP: " + player.getHp();
         score = Integer.toString(player.getScore());
         this.base = "Base HP: " + base.getHp();
+        turnPhaseInfo = turn.getPhase() == Turn.Phase.ATTACK ? "Atak" : "Przerwa od ataku";
         gift = player.getGiftType() != -1 && player.getGiftTime() > 0 ?
                 String.format("%.2f", player.getGiftTime()) :
                 "";
     }
 
-    public void setInfo(String info) {
-        this.info = info;
-    }
-
-    public void setGift(String gift) {
-        this.gift = gift;
+    public void setTurnPhaseInfo(String turnPhaseInfo) {
+        this.turnPhaseInfo = turnPhaseInfo;
     }
 
     @Override
@@ -51,7 +48,7 @@ public class GameUI extends Actor {
         uiFont.draw(batch, score, 300, 475);
         uiFont.draw(batch, life, 570, 475);
         uiFont.draw(batch, base, 570, 450);
-        uiFont.draw(batch, info, 150, 20);
+        uiFont.draw(batch, turnPhaseInfo, 150, 20);
         uiFont.draw(batch, gift, 500, 425);
     }
 

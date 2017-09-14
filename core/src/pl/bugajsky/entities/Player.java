@@ -1,6 +1,5 @@
 package pl.bugajsky.entities;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -13,9 +12,6 @@ import pl.bugajsky.Direction;
  */
 
 public class Player extends Circle implements Drawable {
-
-    private int level;
-
     private int hp;
     private float moveVelocity;
     private float runVelocity;
@@ -59,14 +55,6 @@ public class Player extends Circle implements Drawable {
         step = 1;
 
         currSprite = atlas.createSprite(Integer.toString(getStep()));
-    }
-
-    public int getLevel() {
-        return level;
-    }
-
-    public void setLevel(int level) {
-        this.level = level;
     }
 
     public int getHp() {

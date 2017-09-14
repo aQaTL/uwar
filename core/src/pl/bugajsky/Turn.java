@@ -1,59 +1,56 @@
 package pl.bugajsky;
 
+import com.badlogic.gdx.Gdx;
+
+
 /**
  * Created by mariuszbugajski on 02.05.2017.
  */
 public class Turn {
-    private boolean typ;
-    private boolean boss;
-    private float time;
-    private float bossTime;
-    private float attackTimeout;
-    private float breakTimeout;
+    private Phase phase;
+    private int level;
+
+    private float phaseTime;
     private int monstersLimit;
     private boolean bossAdded;
 
-    public Turn(boolean typ, boolean boss, float time) {
-        this.typ = typ;
-        this.boss = boss;
-        this.time = time;
-        bossAdded = false;
+    public Turn() {
+        phase = Phase.ATTACK;
+        phaseTime = phase.getPhaseDuration();
+
+        level = 1;
         monstersLimit = 10;
-        bossTime = 0;
-        attackTimeout = 60;
-        breakTimeout = 10;
     }
 
-    public boolean isTyp() {
-        return typ;
+    public void update() {
+        if (!isBossLevel()) {
+            updatePhaseTime();
+        }
     }
 
-    public void setTyp(boolean typ) {
-        this.typ = typ;
+    private void updatePhaseTime() {
+        phaseTime -= Gdx.graphics.getDeltaTime();
+        if (phaseTime < 0) {
+            nextPhase();
+        }
     }
 
-    public boolean isBoss() {
-        return boss;
+    private void nextPhase() {
+        phase = phase == Phase.ATTACK ? phase : Phase.REGENERATION;
+        phase.increasePhaseDuration();
+        phaseTime = phase.getPhaseDuration();
+
+        level++;
+        monstersLimit *= 1.5;
     }
 
-    public void setBoss(boolean boss) {
-        this.boss = boss;
+    public void bossKilled() {
+        nextPhase();
+        setBossAdded(false);
     }
 
-    public float getTime() {
-        return time;
-    }
-
-    public void setTime(float time) {
-        this.time = time;
-    }
-
-    public int getMonstersLimit() {
-        return monstersLimit;
-    }
-
-    public void setMonstersLimit(int monstersLimit) {
-        this.monstersLimit = monstersLimit;
+    public boolean isBossLevel() {
+        return level % 5 == 0;
     }
 
     public boolean isBossAdded() {
@@ -64,35 +61,36 @@ public class Turn {
         this.bossAdded = bossAdded;
     }
 
-    public float getBossTime() {
-        return bossTime;
+    public int getMonstersLimit() {
+        return monstersLimit;
     }
 
-    public void setBossTime(float bossTime) {
-        this.bossTime = bossTime;
+    public int getLevel() {
+        return level;
     }
 
-    public float getAttackTimeout() {
-        return attackTimeout;
+    public Phase getPhase() {
+        return phase;
     }
 
-    public void setAttackTimeout(float attackTimeout) {
-        this.attackTimeout = attackTimeout;
-    }
+    enum Phase {
+        ATTACK(60, 5), REGENERATION(10, 2);
 
-    public float getBreakTimeout() {
-        return breakTimeout;
-    }
+        private int phaseDuration;
+        private final int durationIncrementValue;
 
-    public void setBreakTimeout(float breakTimeout) {
-        this.breakTimeout = breakTimeout;
-    }
+        Phase(int phaseDuration, int durationIncrementValue) {
+            this.phaseDuration = phaseDuration;
+            this.durationIncrementValue = durationIncrementValue;
+        }
 
-    public void updateAttackTimeout() {
-        attackTimeout += 5;
-    }
+        public int getPhaseDuration() {
+            return phaseDuration;
+        }
 
-    public void changeTimeBreak() {
-        breakTimeout += 2;
+        public void increasePhaseDuration() {
+            phaseDuration += durationIncrementValue;
+        }
     }
 }
+

@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
@@ -68,7 +69,7 @@ public class Game implements Screen {
         playerTextureAtlas = new TextureAtlas(Gdx.files.internal("player.pack"));
         enemyTextureAtlas = new TextureAtlas(Gdx.files.internal("enemy.pack"));
 
-        turn = new Turn(false, false, 60);
+        turn = new Turn();
 
         playerShots = new LinkedList<>();
         monstersShots = new LinkedList<>();
@@ -161,90 +162,21 @@ public class Game implements Screen {
         batch.setProjectionMatrix(camera.combined);
         renderer.setView(camera);
 
-        gameUI.updateStats(player, playerBase);
+        gameUI.updateStats(player, playerBase, turn);
 
         updateCameraPosition();
 
-//        TURA
-        if (player.getLevel() % 5 != 0) {
-            turn.setTime(turn.getTime() - Gdx.graphics.getDeltaTime());
+        turn.update();
 
-//        sprawdzenie czy nie skończył się czas ataku
-            if (turn.getTime() < 0 && turn.isTyp() == false) {
-                turn.setTyp(true);
-                turn.updateAttackTimeout();
-                turn.setTime(turn.getBreakTimeout());
-                gameUI.setInfo("Przerwa od ataku");
-//            System.out.println("Koniec czasu ataku");
+        if (turn.isBossLevel()) {
+            spawnBossIfHaventAlready();
+
+            boolean bossesKilled = monsters.stream().noneMatch(Monster::isBoss);
+            if (bossesKilled) {
+                turn.bossKilled();
+
+                applyBossKillingGift();
             }
-
-//        sprawdzenie czy nie skończył się czas odpoczynku
-            if (turn.getTime() < 0 && turn.isTyp()) {
-                int monstersLimit = (int) (turn.getMonstersLimit() * 1.5);
-                turn.setMonstersLimit(monstersLimit);
-                turn.setTyp(false);
-                turn.changeTimeBreak();
-                turn.setTime(turn.getAttackTimeout());
-                player.setLevel(player.getLevel() + 1);
-                gameUI.setInfo("Atak");
-                if (player.getLevel() % 5 == 0) {
-                    turn.setBoss(true);
-                } else {
-                    turn.setBoss(false);
-                }
-            }
-//            System.out.println(playerStats.getLevel());
-        } else {
-
-            turn.setBossTime(turn.getBossTime() + Gdx.graphics.getDeltaTime());
-
-            if (turn.getBossTime() > 5) {
-                gameUI.setInfo("");
-            }
-
-            if (turn.isBoss() && !turn.isBossAdded()) {
-                monsters.add(new Monster(
-                        r.nextInt(5000),
-                        r.nextInt(5000),
-                        r.nextInt(25),
-                        r.nextInt(20),
-                        r.nextInt(100),
-                        enemyTextureAtlas));
-                turn.setBossAdded(true);
-            }
-
-            boolean isBoss = false;
-            for (Monster m : monsters) {
-                if (m.isBoss() == true) {
-                    isBoss = true;
-                }
-            }
-
-            if (isBoss == false) {
-                boolean gift = r.nextBoolean();
-                if (gift == false) {
-                    player.setHp(player.getHp() + 5);
-                } else {
-                    playerBase.setHp(playerBase.getHp() + 5);
-                }
-                turn.setBossTime(0);
-                turn.setBoss(false);
-                turn.setBossAdded(false);
-                turn.setTyp(false);
-                turn.setTime(turn.getAttackTimeout());
-                player.setLevel(player.getLevel() + 1);
-            }
-        }
-
-
-//        Usunięcie info o "Przewa od ataku"
-        if (!turn.isTyp() && turn.getTime() < 5) {
-            gameUI.setInfo("");
-        }
-
-//        Usunięcie info o "Atak"
-        if (turn.isTyp() && turn.getTime() < 2) {
-            gameUI.setInfo("");
         }
 
 
@@ -350,11 +282,11 @@ public class Game implements Screen {
 //		POTWORY
         timerMonster += Gdx.graphics.getDeltaTime();
         if (timerMonster > 1) {
-            if (monsters.size() < turn.getMonstersLimit() && !turn.isTyp())
+            if (monsters.size() < turn.getMonstersLimit() && turn.getPhase() == Turn.Phase.ATTACK)
                 monsters.add(new Monster(
                         r.nextInt(5000),
                         r.nextInt(5000),
-                        player.getLevel(),
+                        turn.getLevel(),
                         enemyTextureAtlas));
             timerMonster = 0;
         }
@@ -502,7 +434,7 @@ public class Game implements Screen {
 
 //        sprawdzenie czasu obecnego prezentu
         if (player.getGiftTime() < 10 && player.getGiftType() != -1) {
-            gameUI.setInfo("");
+            gameUI.setTurnPhaseInfo("");
         }
 
 //        Show bonus time
@@ -578,6 +510,22 @@ public class Game implements Screen {
         float xDiff = player.x > 500 && player.x < 4500 ? player.x - camera.position.x : 0;
         float yDiff = player.y > 500 && player.y < 4500 ? player.y - camera.position.y : 0;
         camera.translate(xDiff, yDiff);
+    }
+
+    private void spawnBossIfHaventAlready() {
+        if (!turn.isBossAdded()) {
+            monsters.add(Monster.createBoss(enemyTextureAtlas));
+            turn.setBossAdded(true);
+        }
+    }
+
+    private void applyBossKillingGift() {
+        boolean gift = MathUtils.random.nextBoolean();
+        if (!gift) {
+            player.setHp(player.getHp() + 5);
+        } else {
+            playerBase.setHp(playerBase.getHp() + 5);
+        }
     }
 
     private void checkGameEndCondition() {

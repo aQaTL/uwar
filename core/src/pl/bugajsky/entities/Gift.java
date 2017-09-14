@@ -75,31 +75,31 @@ public class Gift extends Rectangle {
     public void getGift(Player player, LinkedList<Monster> monsters, LinkedList<Shot> shootsPlayer, LinkedList<Shot> shootsMonster, GameUI gameUI) {
         if (getType() == 0) {
             player.setHp(player.getHp() + 10);
-            gameUI.setInfo("Dodano 10pkt zycia");
+            gameUI.setTurnPhaseInfo("Dodano 10pkt zycia");
         } else if (getType() == 1) {
             player.setHp(player.getHp() - 10);
-            gameUI.setInfo("Odjeto 10pkt zycia");
+            gameUI.setTurnPhaseInfo("Odjeto 10pkt zycia");
         } else if (getType() == 2) {
             player.setMoveVelocity(player.getMoveVelocity() + 50);
-            gameUI.setInfo("Zwiekszono szybkosc gracza");
+            gameUI.setTurnPhaseInfo("Zwiekszono szybkosc gracza");
         } else if (getType() == 3) {
             player.setMoveVelocity(player.getMoveVelocity() - 50);
-            gameUI.setInfo("Zmniejszono szybkosc gracza");
+            gameUI.setTurnPhaseInfo("Zmniejszono szybkosc gracza");
         } else if (getType() == 4) {
             for (Iterator<Shot> it = shootsMonster.iterator(); it.hasNext(); ) {
                 Shot shot = it.next();
                 it.remove();
-                gameUI.setInfo("Usunieto wszystkie strzaly wrogow");
+                gameUI.setTurnPhaseInfo("Usunieto wszystkie strzaly wrogow");
             }
         } else if (getType() == 5) {
             for (Monster monster : monsters) {
                 monster.setSpeed(monster.getSpeed() + 1);
-                gameUI.setInfo("Zwiekszono szybkosc wrogow");
+                gameUI.setTurnPhaseInfo("Zwiekszono szybkosc wrogow");
             }
         } else if (getType() == 6) {
             for (Monster monster : monsters) {
                 monster.setSpeed(monster.getSpeed() - 1);
-                gameUI.setInfo("Zmniejszono szybkosc wroga");
+                gameUI.setTurnPhaseInfo("Zmniejszono szybkosc wroga");
             }
         }
     }
