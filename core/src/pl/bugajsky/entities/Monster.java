@@ -10,8 +10,10 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import pl.bugajsky.Direction;
+import pl.bugajsky.Shot;
 
 import java.util.Random;
+import java.util.function.Consumer;
 
 import static pl.bugajsky.Direction.*;
 
@@ -193,6 +195,15 @@ public class Monster extends Rectangle implements Drawable {
             moveDirection = generateDirectionTowardsPlayer(player);
             moveQuantity = r.nextInt(20) + 5;
         }
+    }
+
+    public Shot generateShotTowardsPlayer(Player player) {
+        Direction shotDirection = this.generateDirectionTowardsPlayer(player);
+        return new Shot(
+                this.x + this.getTexture().getWidth() / 2 - 5,
+                this.y + this.getTexture().getHeight() / 2 - 5,
+                1,
+                shotDirection);
     }
 
     public Direction generateDirectionTowardsPlayer(Player player) {

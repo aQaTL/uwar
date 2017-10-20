@@ -11,6 +11,7 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.RandomXS128;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Timer;
@@ -77,7 +78,7 @@ public class Game implements Screen {
         monsters = new LinkedList<>();
         gifts = new LinkedList<>();
 
-        r = new Random();
+        r = new RandomXS128();
 
         playerBase = new Base();
 
@@ -187,21 +188,7 @@ public class Game implements Screen {
             }
         }
 
-//		STRZAŁY
-//		Dodawanie strzałów potorów
-        for (Monster monster : monsters) {
-            int l1 = r.nextInt(100);
-            int l2 = r.nextInt(100);
-            if (l1 == l2) {
-                Direction shotDirection = monster.generateDirectionTowardsPlayer(player);
-                monstersShots.add(new Shot(
-                        monster.x + monster.getTexture().getWidth() / 2 - 5,
-                        monster.y + monster.getTexture().getHeight() / 2 - 5,
-                        1,
-                        shotDirection));
-            }
-        }
-
+        randomlyGenerateMonsterShots();
 
 //		dodanie strzałów
         timeShoot += Gdx.graphics.getDeltaTime();
@@ -494,6 +481,15 @@ public class Game implements Screen {
         removeCollidingObjects(playerShots, gifts);
 
         updateGiftsTime();
+    }
+
+    private void randomlyGenerateMonsterShots() {
+        for (Monster monster : monsters) {
+            if (r.nextInt(100) == 1) {
+                Shot shot = monster.generateShotTowardsPlayer(player);
+                monstersShots.add(shot);
+            }
+        }
     }
 
     private void updatePlayerHpRegenerationInBase() {
