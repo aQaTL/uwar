@@ -67,7 +67,7 @@ public class Game implements Screen {
 
         sound = Gdx.audio.newSound(Gdx.files.internal("sound/shoot2.wav"));
 
-        attackMusic = Gdx.audio.newMusic(Gdx.files.internal("music/atack.ogg"));
+        attackMusic = Gdx.audio.newMusic(Gdx.files.internal("music/attack.ogg"));
         attackMusic.play();
 
         batch = new SpriteBatch();
