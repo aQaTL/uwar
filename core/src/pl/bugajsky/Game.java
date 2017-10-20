@@ -13,6 +13,7 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import pl.bugajsky.entities.*;
 
@@ -33,11 +34,11 @@ public class Game implements Screen {
 
     private Player player;
     private Base playerBase;
+    private Timer.Task baseRegen;
 
     private OrthographicCamera camera;
     private OrthogonalTiledMapRenderer renderer;
 
-    private float timeHome;
     private float timeShoot;
     private float timerMonster;
     private float giftTimer;
@@ -102,13 +103,18 @@ public class Game implements Screen {
         gameArea = new Texture(pixmap);
         pixmap.dispose();
 
-        timeHome = 0;
-
         timeShoot = 1;
 
         timerMonster = 1;
 
         giftTimer = 0;
+
+        baseRegen = new Timer.Task() {
+            @Override
+            public void run() {
+                player.setHp(player.getHp() + 1);
+            }
+        };
     }
 
 
@@ -164,9 +170,11 @@ public class Game implements Screen {
 
         gameUI.updateStats(player, playerBase, turn);
 
+        turn.update();
+
         updateCameraPosition();
 
-        turn.update();
+        updatePlayerHpRegenerationInBase();
 
         if (turn.isBossLevel()) {
             spawnBossIfHaventAlready();
@@ -177,24 +185,6 @@ public class Game implements Screen {
 
                 applyBossKillingGift();
             }
-        }
-
-
-//		dodawanie życia w bazie
-        if (player.x > 2400 && player.x < 2600) {
-            if (player.y > 2400 && player.y < 2600) {
-                if (player.getHp() < 100) {
-                    timeHome += Gdx.graphics.getDeltaTime();
-                    if (timeHome > 1) {
-                        player.setHp(player.getHp() + 1);
-                        timeHome = 0;
-                    }
-                }
-            } else {
-                timeHome = 0;
-            }
-        } else {
-            timeHome = 0;
         }
 
 //		STRZAŁY
@@ -441,7 +431,7 @@ public class Game implements Screen {
         if (player.getGiftType() != -1) {
             player.setGiftTime(player.getGiftTime() - Gdx.graphics.getDeltaTime());
             if (player.getGiftType() == 2 || player.getGiftType() == 3 || player.getGiftType() == 5 || player.getGiftType() == 6) {
-                gameUI.setGift("Bonus: " + player.getGiftTime());
+                //TODO gameUI.setGift("Bonus: " + player.getGiftTime());
             }
         }
 
@@ -449,19 +439,19 @@ public class Game implements Screen {
         if (player.getGiftTime() < 0 && player.getGiftType() != -1) {
             if (player.getGiftType() == 2) {
                 player.setMoveVelocity(player.getMoveVelocity() - 50);
-                gameUI.setGift("");
+                //TODO gameUI.setGift("");
             } else if (player.getGiftType() == 3) {
                 player.setMoveVelocity(player.getMoveVelocity() + 50);
-                gameUI.setGift("");
+                //TODO gameUI.setGift("");
             } else if (player.getGiftType() == 5) {
                 for (Monster monster : monsters) {
                     monster.setSpeed(monster.getSpeed() - 1);
-                    gameUI.setGift("");
+                    //TODO gameUI.setGift("");
                 }
             } else if (player.getGiftType() == 6) {
                 for (Monster monster : monsters) {
                     monster.setSpeed(monster.getSpeed() + 1);
-                    gameUI.setGift("");
+                    //TODO gameUI.setGift("");
                 }
             }
 
@@ -504,6 +494,16 @@ public class Game implements Screen {
         removeCollidingObjects(playerShots, gifts);
 
         updateGiftsTime();
+    }
+
+    private void updatePlayerHpRegenerationInBase() {
+        if (playerBase.contains(player)) {
+            if (!baseRegen.isScheduled()) {
+                Timer.schedule(baseRegen, 1.0f, 1.0f);
+            }
+        } else if (baseRegen.isScheduled()) {
+            baseRegen.cancel();
+        }
     }
 
     private void updateCameraPosition() {
